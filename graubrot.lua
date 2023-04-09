@@ -94,6 +94,10 @@ tables.building = osm2pgsql.define_table({
     indexes = {{
         column = 'building',
         method = 'btree'
+    }, {
+        column = 'geom',
+        method = 'gist'
+
     }}
 })
 
@@ -170,6 +174,10 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'layer',
         method = 'btree'
+    }, {
+        column = 'geom',
+        method = 'gist'
+
     }}
 })
 
@@ -217,6 +225,10 @@ tables.waterway = osm2pgsql.define_table({
     }, {
         column = 'tunnel',
         method = 'btree'
+
+    }, {
+        column = 'geom',
+        method = 'gist'
 
     }}
 })
@@ -285,7 +297,6 @@ function str_to_bool(str)
     return string.lower(str) == 'true'
 end
 
-
 -- Function which fill the tables
 
 function osm2pgsql.process_way(object)
@@ -317,7 +328,7 @@ function osm2pgsql.process_way(object)
             name = object.tags.name,
             name_en = object.tags['name:en'],
             street = object.tags['addr:street'],
-            house_number = object.tags['addr:housenumber'],
+            housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
             geom = {
@@ -393,7 +404,7 @@ function osm2pgsql.process_relation(object)
             name = object.tags.name,
             name_en = object.tags['name:en'],
             street = object.tags['addr:street'],
-            house_number = object.tags['addr:housenumber'],
+            housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
             geom = {
