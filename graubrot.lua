@@ -54,6 +54,30 @@ tables.water = osm2pgsql.define_table({
     }}
 })
 
+tables.grass = osm2pgsql.define_table({
+    name = 'grass',
+    schema = import_schema,
+    ids = {
+        type = 'area',
+        id_column = 'area_id'
+    },
+    columns = {{
+        column = 'fid',
+        sql_type = 'serial',
+        create_only = true
+    }, {
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'name_en',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'multipolygon',
+        projection = epsg_code
+    }}
+})
+
 tables.building = osm2pgsql.define_table({
     name = 'building',
     schema = import_schema,
@@ -233,6 +257,82 @@ tables.waterway = osm2pgsql.define_table({
     }}
 })
 
+
+tables.address = osm2pgsql.define_table({
+    name = 'address',
+    schema = import_schema,
+    ids = {
+        type = 'node',
+        id_column = 'node_id'
+    },
+    columns = {{
+        column = 'fid',
+        sql_type = 'serial',
+        create_only = true
+    }, {
+        column = 'street',
+        type = 'text'
+    }, {
+        column = 'housenumber',
+        type = 'text'
+    }, {
+        column = 'postcode',
+        type = 'text'
+    }, {
+        column = 'city',
+        type = 'text'
+    }, {
+        column = 'geom',
+        type = 'point',
+        projection = epsg_code
+    }}
+})
+
+tables.elevation_point = osm2pgsql.define_table({
+    name = 'elevation_point',
+    schema = import_schema,
+    ids = {
+        type = 'node',
+        id_column = 'node_id'
+    },
+    columns = {{
+        column = 'fid',
+        sql_type = 'serial',
+        create_only = true
+    }, {
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'name_en',
+        type = 'text'
+    }, {
+        column = 'type',
+        type = 'text'
+    }, {
+        column = 'direction',
+        type = 'text'
+    }, {
+        column = 'ele',
+        type = 'real'
+    }, {
+        column = 'geom',
+        type = 'point',
+        projection = epsg_code
+    }},
+    indexes = {{
+        column = 'type',
+        method = 'btree'
+    }, {
+        column = 'ele',
+        method = 'btree'
+
+    }, {
+        column = 'geom',
+        method = 'gist'
+
+    }}
+})
+
 -- Helper functions 
 
 local function clean_tunnel(object)
@@ -297,7 +397,42 @@ function str_to_bool(str)
     return string.lower(str) == 'true'
 end
 
+
 -- Function which fill the tables
+
+function osm2pgsql.process_node(object)
+
+	if object.tags['addr:housenumber'] or object.tags['addr:street'] then
+        tables.address:add_row({
+			street = object.tags['addr:street'],
+			housenumber = object.tags['addr:housenumber'],
+			postcode = object.tags['addr:postcode'],
+			city = object.tags['addr:city']
+        })	
+	end
+
+    if object.tags.natural == 'peak' or object.tags.natural == 'vulcano' or object.tags.natural == 'saddle' then
+        tables.elevation_point:add_row({
+            name = object.tags.name,
+            name_en = object.tags['name:en'],
+            type = object.tags.natural,
+			ele = tonumber(object.tags.ele),
+            direction = object.tags.direction
+        })
+    end
+
+    if object.tags.tourism == 'viewpoint' then
+        tables.elevation_point:add_row({
+            name = object.tags.name,
+            name_en = object.tags['name:en'],
+            type = object.tags.tourism,
+			ele = tonumber(object.tags.ele),
+            direction = object.tags.direction
+        })
+    end
+
+
+end
 
 function osm2pgsql.process_way(object)
 
@@ -321,6 +456,24 @@ function osm2pgsql.process_way(object)
             }
         })
     end
+
+    if type == 'multipolygon' and (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or object.tags.landuse == 'meadow') then
+        tables.grass:add_row({
+            name = object.tags.name,
+            name_en = object.tags['name:en'],
+            geom = { create = 'area' }
+        })
+    end
+
+
+    if object.is_closed and (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or object.tags.landuse == 'meadow') then
+        tables.grass:add_row({
+            name = object.tags.name,
+            name_en = object.tags['name:en'],
+            geom = { create = 'area' }
+        })
+    end  
+
 
     if object.is_closed and object.tags.building then
         tables.building:add_row({
