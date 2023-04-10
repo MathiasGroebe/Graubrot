@@ -44,7 +44,27 @@ Water area layer with name of the objects, by combining the two common classific
 ```mermaid
 graph TD;
     natural=water-->water;
-    waterway=riverbank-->water
+    waterway=riverbank-->water;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| area_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| name | text | | Name of the object |
+| name_en | text | | Englisch name of the object | 
+| geom | Multipolygon geometry | GiST| Multipolygon geometry of the OSM object |
+
+### Grass
+
+Area layer for different kind of grass like vegetation with name of the objects.
+
+```mermaid
+graph TD;
+    natural=meadow-->grass;
+    natural=heath-->grass;
+    natural=grassland-->grass;
+    landuse=meadow-->grass;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -85,7 +105,7 @@ Line layer with roads and railways with name of the objects, and essential other
 ```mermaid
 graph TD;
     highway=*-->traffic;
-    railway=*-->traffic
+    railway=*-->traffic;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -113,7 +133,7 @@ Waterway linstring layer with name of the objects, and common attributes.
 
 ```mermaid
 graph TD;
-    waterway=*-->waterway
+    waterway=*-->waterway;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -128,6 +148,48 @@ graph TD;
 | name_en | text | | Englisch name of the object | 
 | geom | Linestring geometry | GiST| Linestring geometry of the OSM object |
 
+### Address
+
+Address point layer with street, housenumber, postcode, and city.
+
+```mermaid
+graph TD;
+    addr:housenumber-->address;
+    addr:street-->address;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| node_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| street | text | | Content of the ```addr:street``` tag | 
+| housenumber | text | | Content of the ```addr:housenumber``` tag | 
+| postcode | text | | Content of the ```addr:postcode``` tag | 
+| city | text | | Content of the ```addr:city``` tag | 
+| geom | Point geometry | GiST | Multipolygon geometry of the OSM object |
 
 
-TODO:: POI + Peak
+### Elevation point
+
+Peaks, vulcanos, saddles and view points in one table with their elevation.
+
+```mermaid
+graph TD;
+    natural=peak-->elevation_point;
+    natural=vulcano-->elevation_point;
+    natural=saddle-->elevation_point;
+    tourism=viewpoint-->elevation_point;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| node_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| name | text | | Name of the object |
+| name_en | text | | Englisch name of the object | 
+| type | text | B-Tree | Content of the ```natural``` tag or the ```tourism``` tag | 
+| direction | text | | Content of the ```direction``` tag | 
+| ele | real | B-Tree | Content of the ```ele``` tag converted to a number | 
+| geom | Point geometry | GiST | Multipolygon geometry of the OSM object |
+
+### POI 
