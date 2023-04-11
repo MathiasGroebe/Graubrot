@@ -192,4 +192,41 @@ graph TD;
 | ele | real | B-Tree | Content of the ```ele``` tag converted to a number | 
 | geom | Point geometry | GiST | Multipolygon geometry of the OSM object |
 
+
+### Admin boundary line
+
+Administrative boundaries as lines. Useful for rendering.
+
+```mermaid
+graph TD;
+    boundary=administrative-->admin_boundary_line;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| way_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| name | text | | Name of the object |
+| name_en | text | | Englisch name of the object | 
+| admin_level | text | B-Tree | Content of the ```admin_level``` tag | 
+
+### Admin boundary area
+
+Administrative boundaries as lines. Useful for processing and analysis.
+
+```mermaid
+graph TD;
+    boundary=administrative-->admin_boundary_area;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| area_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| name | text | | Name of the object |
+| name_en | text | | Englisch name of the object | 
+| admin_level | text | B-Tree | Content of the ```admin_level``` tag | 
+
 ### POI 
+
+Existing but needs improvment!
