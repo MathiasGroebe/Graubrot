@@ -500,7 +500,11 @@ tables.poi = osm2pgsql.define_table({
         column = 'osm_geom',
         type = 'geometry',
         projection = epsg_code
-    }, { column = 'geom', create_only = true, sql_type = 'geometry(point, ' .. epsg_code .. ') GENERATED ALWAYS AS (ST_PointOnSurface(osm_geom)) STORED' }},
+    }, {
+        column = 'geom',
+        create_only = true,
+        sql_type = 'geometry(point, ' .. epsg_code .. ') GENERATED ALWAYS AS (ST_PointOnSurface(osm_geom)) STORED'
+    }},
     indexes = {{
         column = 'leisure',
         method = 'btree'
@@ -510,31 +514,31 @@ tables.poi = osm2pgsql.define_table({
     }, {
         column = 'historic',
         method = 'btree'
-    },{
+    }, {
         column = 'man_made',
         method = 'btree'
-    },{
+    }, {
         column = 'natural',
         method = 'btree'
-    },{
+    }, {
         column = 'amenity',
         method = 'btree'
-    },{
+    }, {
         column = 'shop',
         method = 'btree'
-    },{
+    }, {
         column = 'public_transport',
         method = 'btree'
-    },{
+    }, {
         column = 'highway',
         method = 'btree'
-    },{
+    }, {
         column = 'barrier',
         method = 'btree'
-    },{
+    }, {
         column = 'information',
         method = 'btree'
-    },{
+    }, {
         column = 'osm_geom',
         method = 'gist'
     }}
@@ -604,7 +608,6 @@ function str_to_bool(str)
     return string.lower(str) == 'true'
 end
 
-
 -- Helper function to remove some of the tags we usually are not interested in.
 -- Returns true if there are no tags left.
 function clean_tags(tags)
@@ -625,46 +628,51 @@ function osm2pgsql.process_node(object)
     end
 
     if object.tags['addr:housenumber'] or object.tags['addr:street'] then
-        tables.address:add_row({
+        tables.address:insert({
             street = object.tags['addr:street'],
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
-            city = object.tags['addr:city']
+            city = object.tags['addr:city'],
+            geom = object:as_point()
         })
     end
 
     if object.tags.natural == 'peak' or object.tags.natural == 'vulcano' or object.tags.natural == 'saddle' then
-        tables.elevation_point:add_row({
+        tables.elevation_point:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = object.tags.natural,
             ele = tonumber(object.tags.ele),
-            direction = object.tags.direction
+            direction = object.tags.direction,
+            geom = object:as_point()
         })
     end
 
     if object.tags.tourism == 'viewpoint' then
-        tables.elevation_point:add_row({
+        tables.elevation_point:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = object.tags.tourism,
             ele = tonumber(object.tags.ele),
-            direction = object.tags.direction
+            direction = object.tags.direction,
+            geom = object:as_point()
         })
     end
 
     if object.tags.place then
-        tables.place:add_row({
+        tables.place:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             place = object.tags.place,
             population = tonumber(object.tags.population),
-            tags = object.tags
+            tags = object.tags,
+            geom = object:as_point()
         })
     end
 
-    if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
-        tables.poi:add_row({
+    if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+        tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -680,9 +688,9 @@ function osm2pgsql.process_node(object)
             barrier = object.tags.barrier,
             information = object.tags.information,
             tags = object.tags,
-            osm_geom = { create = 'point' }
+            osm_geom = object:as_point()
         })
-    end   
+    end
 
 end
 
@@ -694,51 +702,43 @@ function osm2pgsql.process_way(object)
 
     -- A closed way that also has the right tags for an area is a polygon.
     if object.is_closed and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
-        tables.forest:add_row({
+        tables.forest:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
     if object.is_closed and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
-        tables.water:add_row({
+        tables.water:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
     if type == 'multipolygon' and
         (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
             object.tags.landuse == 'meadow') then
-        tables.grass:add_row({
+        tables.grass:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
     if object.is_closed and
         (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
             object.tags.landuse == 'meadow') then
-        tables.grass:add_row({
+        tables.grass:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
     if object.is_closed and object.tags.building then
-        tables.building:add_row({
+        tables.building:insert({
             building = object.tags.building,
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -746,14 +746,12 @@ function osm2pgsql.process_way(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
     if object.tags.highway or object.tags.railway then
-        tables.traffic:add_row({
+        tables.traffic:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             highway = object.tags.highway,
@@ -766,39 +764,36 @@ function osm2pgsql.process_way(object)
             tunnel = clean_tunnel(object), -- make it a bool
             layer = tonumber(object.tags.layer), -- convert it to a number
             ref = object.tags.ref,
-            geom = {
-                create = 'line'
-            }
+            geom = object:as_multilinestring()
         })
     end
 
     if object.tags.waterway then
-        tables.waterway:add_row({
+        tables.waterway:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             waterway = object.tags.waterway,
             tunnel = clean_tunnel(object),
             layer = tonumber(object.tags.layer),
             intermittent = str_to_bool(object.tags.intermittent),
-            geom = {
-                create = 'line'
-            }
+            geom = object:as_multilinestring()
         })
     end
 
     if object.tags.boundary == 'administrative' then
-        tables.admin_boundary_line:add_row({
+        tables.admin_boundary_line:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
-            geom = {
-                create = 'line'
-            }
+            geom = object:as_multilinestring()
         })
     end
 
-    if object.is_closed and (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport) then
-        tables.poi:add_row({
+    if object.is_closed and
+        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or
+            object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or
+            object.tags.public_transport) then
+        tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -814,12 +809,13 @@ function osm2pgsql.process_way(object)
             barrier = object.tags.barrier,
             information = object.tags.information,
             tags = object.tags,
-            osm_geom = { create = 'area' }
+            geom = object:as_multipolygon()
         })
     end
 
-    if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
-        tables.poi:add_row({
+    if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+        tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -835,9 +831,9 @@ function osm2pgsql.process_way(object)
             barrier = object.tags.barrier,
             information = object.tags.information,
             tags = object.tags,
-            osm_geom = { create = 'line' }
+            osm_geom = object:as_multilinestring()
         })
-    end  
+    end
 
 end
 
@@ -850,28 +846,24 @@ function osm2pgsql.process_relation(object)
     local type = object:grab_tag('type')
 
     -- Store multipolygon relations as polygons
-    if type == 'multipolygon' and (object.tags.landuse == 'forest' or object.tags.natural == 'forest') then
-        tables.forest:add_row({
+    if type == 'multipolygon' and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
+        tables.forest:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
     if type == 'multipolygon' and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
-        tables.water:add_row({
+        tables.water:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
     if type == 'multipolygon' and object.tags.building then
-        tables.building:add_row({
+        tables.building:insert({
             building = object.tags.building,
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -879,25 +871,24 @@ function osm2pgsql.process_relation(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
     if object.tags.boundary == 'administrative' then
-        tables.admin_boundary_area:add_row({
+        tables.admin_boundary_area:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
-            geom = {
-                create = 'area'
-            }
+            geom = object:as_multipolygon()
         })
     end
 
-    if object.is_closed and (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport) then
-        tables.poi:add_row({
+    if type == 'multipolygon' and
+        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or
+            object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or
+            object.tags.public_transport) then
+        tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -913,12 +904,13 @@ function osm2pgsql.process_relation(object)
             barrier = object.tags.barrier,
             information = object.tags.information,
             tags = object.tags,
-            osm_geom = { create = 'area' }
+            osm_geom = object:as_multipolygon()
         })
     end
 
-    if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
-        tables.poi:add_row({
+    if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+        tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -934,8 +926,8 @@ function osm2pgsql.process_relation(object)
             barrier = object.tags.barrier,
             information = object.tags.information,
             tags = object.tags,
-            osm_geom = { create = 'line' }
+            osm_geom = object:as_multilinestring()
         })
-    end  
+    end
 
 end
