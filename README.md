@@ -8,13 +8,15 @@ A osm2pgsql configuration for the flex-backend for everyday use. Imports common 
 1. Create a PostgrSQL Database
 2. Enable PostGIS by executing ```CREATE EXTENSION POSTGIS```
 3. Create a schema for the data import ```CREATE SCHEMA osm```. You can also use another Schema. It is just the default value.
-4. Run ```osm2pgsql -c -O flex -S graubrot.lua -d postgres://USER:PASS@HOST/DB_NAME  YOUR_OSM_FILE.osm.pbf```
+4. Make sure that you have recent version of osm2pgsql. Minimum is osm2pgsql version 1.8!
+5. Run ```osm2pgsql -c -O flex -S graubrot.lua -d postgres://USER:PASS@HOST/DB_NAME  YOUR_OSM_FILE.osm.pbf```
 
 ### Hints
 
-- Security
-- Index 
-- ...
+- It is better to use enviroment variables for accessing the database. Check the [libpg-parameter](https://www.postgresql.org/docs/current/libpq-envars.html).
+- Indexes are build for rows, which are designed to categories the features in a map style. 
+- It is possible to do alway a reimport with of the data. You can use it also with minutly, hourly or daily updates. Check the [documentation](https://osm2pgsql.org/doc/manual.html#updating-an-existing-database) for details.
+- Feel free to suggest improvments or modify it for you own use. It should demonstrate what is possible and beware of starting everyone from scratch.
 
 
 ## Layers and attributes 
