@@ -548,7 +548,7 @@ tables.poi = osm2pgsql.define_table({
 
 local function clean_tunnel(object)
     -- Make tunnel value a bool
-    local tunnel = nil
+    local tunnel = false
     if object.tags.tunnel == 'yes' then
         tunnel = true
     elseif object.tags.tunnel == 'culvert' then
@@ -570,7 +570,8 @@ local function clean_tunnel(object)
 end
 
 local function clean_bridge(object)
-    local bridge = nil
+    -- Make  bridge a bool
+    local bridge = false
     if object.tags.bridge == 'yes' then
         bridge = true
     elseif object.tags.bridge == 'viaduct' then
