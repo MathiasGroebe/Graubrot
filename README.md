@@ -9,10 +9,11 @@ A osm2pgsql configuration for the flex-backend for everyday use. Imports common 
 2. Enable PostGIS by executing ```CREATE EXTENSION POSTGIS```
 3. Create a schema for the data import ```CREATE SCHEMA osm```. You can also use another Schema. It is just the default value.
 4. Make sure that you have recent version of osm2pgsql. Minimum is osm2pgsql version 1.8!
-5. Run ```osm2pgsql -c -O flex -S graubrot.lua -d postgres://USER:PASS@HOST/DB_NAME  YOUR_OSM_FILE.osm.pbf```
+5. Run ```osm2pgsql -c -O flex -S graubrot.lua -d postgres://USER:PASS@HOST/DB_NAME  sachsen-latest.osm.pbf```
 
 ### Hints
 
+- The example is build for EPSG:32633 which works well for Saxony in Germany to demonstrate the reprojection feature. You can change it to another suitable system in the ```graubrot.lua``` by the ```epsg_code``` variable.
 - It is better to use enviroment variables for accessing the database. Check the [libpg-parameter](https://www.postgresql.org/docs/current/libpq-envars.html).
 - Indexes are build for rows, which are designed to categories the features in a map style. 
 - It is possible to do alway a reimport with of the data. You can use it also with minutly, hourly or daily updates. Check the [documentation](https://osm2pgsql.org/doc/manual.html#updating-an-existing-database) for details.
@@ -232,3 +233,18 @@ graph TD;
 ### POI 
 
 Existing but needs improvment!
+
+## QGIS Demo Project
+
+![Sample rending with QGIS](qgis_rendering.png)
+
+There is a QGIS Demo project visualizing some of the imported OpenStreetMap aming a map at the scale 1:10,000 for Saxony in Germany. The project use a the ```pg_service.conf``` file, expecting a service called "graubrot". Create the following connection in the file. There are tutorials how to use it on [Linux](https://www.postgresql.org/docs/current/libpq-pgservice.html) and [Windows](https://gis.stackexchange.com/questions/393485/how-to-open-qgis-project-without-being-asked-for-postgis-credentials-every-time).
+
+    [graubrot]
+    host=localhost
+    port=5432
+    dbname=graubrot
+    user=a_user
+    password=a_password
+
+The color can be easily adjusted by chaning the project colors in QGIS. Feel free to further adjust the map to your needs, other scales and so on. It should make the start easier.

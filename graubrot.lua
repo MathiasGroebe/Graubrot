@@ -718,19 +718,9 @@ function osm2pgsql.process_way(object)
         })
     end
 
-    if type == 'multipolygon' and
-        (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
-            object.tags.landuse == 'meadow') then
-        tables.grass:insert({
-            name = object.tags.name,
-            name_en = object.tags['name:en'],
-            geom = object:as_multipolygon()
-        })
-    end
-
     if object.is_closed and
         (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
-            object.tags.landuse == 'meadow') then
+            object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or object.tags.landuse == 'recreation_ground') then
         tables.grass:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -857,6 +847,16 @@ function osm2pgsql.process_relation(object)
 
     if type == 'multipolygon' and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
         tables.water:insert({
+            name = object.tags.name,
+            name_en = object.tags['name:en'],
+            geom = object:as_multipolygon()
+        })
+    end
+
+    if type == 'multipolygon' and
+        (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
+            object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or object.tags.landuse == 'recreation_ground') then
+        tables.grass:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
             geom = object:as_multipolygon()
