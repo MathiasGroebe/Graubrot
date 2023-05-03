@@ -232,7 +232,41 @@ graph TD;
 
 ### POI 
 
-Existing but needs improvment!
+Collects many tags and offer them as a point geometry.
+
+```mermaid
+graph TD;
+    amenity=*-->poi;
+    leisure=*-->poi;
+    tourism=*-->poi;
+    man_made=*-->poi;
+    historic=*-->poi;
+    natural=*-->poi;
+    natural=*-->poi;
+    barrier=*-->poi;
+    public_transport=*-->poi;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| osm_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| name | text | | Name of the object |
+| name_en | text | | Englisch name of the object | 
+| leisure | text | B-Tree | Content of the ```leisure``` tag | 
+| tourism | text | B-Tree | Content of the ```tourism``` tag | 
+| historic | text | B-Tree | Content of the ```historic``` tag | 
+| man_made | text | B-Tree | Content of the ```man_made``` tag | 
+| natural | text | B-Tree | Content of the ```natural``` tag | 
+| amenity| text | B-Tree | Content of the ```amenity``` tag | 
+| shop | text | B-Tree | Content of the ```shop``` tag | 
+| public_transport | text | B-Tree | Content of the ```public_transport``` tag | 
+| highway | text | B-Tree | Content of the ```highway``` tag | 
+| barrier | text | B-Tree | Content of the ```barrier``` tag | 
+| information | text | B-Tree | Content of the ```information``` tag | 
+| tags | JSONB | | All tags of the OSM object |
+| osm_geom | Geometry collection | GiST | Geometry of the OSM object |
+| geom | Point geometry | | Point geometry of the OSM object generatet via ST_PointOnSurface on demand |
 
 ## QGIS Demo Project
 
