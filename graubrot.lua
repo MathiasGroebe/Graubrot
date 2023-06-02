@@ -329,8 +329,8 @@ tables.address = osm2pgsql.define_table({
     name = 'address',
     schema = import_schema,
     ids = {
-        type = 'node',
-        id_column = 'node_id'
+        type = 'any',
+        id_column = 'osm_id'
     },
     columns = {{
         column = 'fid',
@@ -349,9 +349,16 @@ tables.address = osm2pgsql.define_table({
         column = 'city',
         type = 'text'
     }, {
-        column = 'geom',
-        type = 'point',
+        column = 'osm_geom',
+        type = 'geometry',
         projection = epsg_code
+    },{
+        column = 'geom',
+        create_only = true,
+        sql_type = 'geometry(point, ' .. epsg_code .. ') GENERATED ALWAYS AS (ST_PointOnSurface(osm_geom)) STORED'
+    }},    indexes = {{
+        column = 'osm_geom',
+        method = 'gist'
     }}
 })
 
@@ -634,7 +641,7 @@ function osm2pgsql.process_node(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            geom = object:as_point()
+            osm_geom = object:as_point()
         })
     end
 
@@ -701,7 +708,16 @@ function osm2pgsql.process_way(object)
         return
     end
 
-    -- A closed way that also has the right tags for an area is a polygon.
+    if object.is_closed and (object.tags['addr:housenumber'] or object.tags['addr:street']) then
+        tables.address:insert({
+            street = object.tags['addr:street'],
+            housenumber = object.tags['addr:housenumber'],
+            postcode = object.tags['addr:postcode'],
+            city = object.tags['addr:city'],
+            osm_geom = object:as_multipolygon()
+        })
+    end    
+    
     if object.is_closed and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
         tables.forest:insert({
             name = object.tags.name,
@@ -800,7 +816,7 @@ function osm2pgsql.process_way(object)
             barrier = object.tags.barrier,
             information = object.tags.information,
             tags = object.tags,
-            geom = object:as_multipolygon()
+            osm_geom = object:as_multipolygon()
         })
     end
 
@@ -837,6 +853,17 @@ function osm2pgsql.process_relation(object)
     local type = object:grab_tag('type')
 
     -- Store multipolygon relations as polygons
+
+    if type == 'multipolygon' and (object.tags['addr:housenumber'] or object.tags['addr:street']) then
+        tables.address:insert({
+            street = object.tags['addr:street'],
+            housenumber = object.tags['addr:housenumber'],
+            postcode = object.tags['addr:postcode'],
+            city = object.tags['addr:city'],
+            osm_geom = object:as_multipolygon()
+        })
+    end
+
     if type == 'multipolygon' and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
         tables.forest:insert({
             name = object.tags.name,
