@@ -359,7 +359,11 @@ tables.address = osm2pgsql.define_table({
     }},    indexes = {{
         column = 'osm_geom',
         method = 'gist'
-    }}
+    }, {
+        column = 'geom',
+        method = 'spgist'
+    }
+}
 })
 
 tables.elevation_point = osm2pgsql.define_table({
@@ -402,7 +406,7 @@ tables.elevation_point = osm2pgsql.define_table({
 
     }, {
         column = 'geom',
-        method = 'gist'
+        method = 'spgist'
     }}
 })
 
@@ -446,7 +450,7 @@ tables.place = osm2pgsql.define_table({
 
     }, {
         column = 'geom',
-        method = 'gist'
+        method = 'spgist'
     }}
 })
 
@@ -548,6 +552,9 @@ tables.poi = osm2pgsql.define_table({
     }, {
         column = 'osm_geom',
         method = 'gist'
+    }, {
+        column = 'geom',
+        method = 'spgist'
     }}
 })
 
