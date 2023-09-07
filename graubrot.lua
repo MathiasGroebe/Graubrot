@@ -584,7 +584,7 @@ local function clean_tunnel(object)
 end
 
 local function clean_bridge(object)
-    -- Make  bridge a bool
+    -- Make bridge a bool
     local bridge = false
     if object.tags.bridge == 'yes' then
         bridge = true
@@ -607,6 +607,7 @@ local function clean_bridge(object)
 end
 
 local function clean_oneway(object)
+    -- Make Oneway a bool
     local oneway = false
     if object.tags.oneway == 'yes' then
         oneway = true
@@ -614,6 +615,16 @@ local function clean_oneway(object)
         oneway = false
     end
     return oneway
+end
+
+local function clean_layer(object)
+    -- Make layer a number
+    layer = 0
+    if object.tags.layer then
+        layer = tonumber(object.tags.layer)
+    end
+
+    return layer
 end
 
 function str_to_bool(str)
@@ -776,7 +787,7 @@ function osm2pgsql.process_way(object)
             oneway = clean_oneway(object), -- make it a bool
             bridge = clean_bridge(object), -- make it a bool
             tunnel = clean_tunnel(object), -- make it a bool
-            layer = tonumber(object.tags.layer), -- convert it to a number
+            layer = clean_layer(object), -- convert it to a number
             ref = object.tags.ref,
             geom = object:as_multilinestring()
         })
