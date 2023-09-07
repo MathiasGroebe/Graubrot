@@ -499,6 +499,9 @@ tables.poi = osm2pgsql.define_table({
         column = 'highway',
         type = 'text'
     }, {
+        column = 'railway',
+        type = 'text'
+    }, {        
         column = 'barrier',
         type = 'text'
     }, {
@@ -543,6 +546,9 @@ tables.poi = osm2pgsql.define_table({
     }, {
         column = 'highway',
         method = 'btree'
+    }, {
+        column = 'railway',
+        method = 'btree'        
     }, {
         column = 'barrier',
         method = 'btree'
@@ -709,6 +715,7 @@ function osm2pgsql.process_node(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
@@ -829,6 +836,7 @@ function osm2pgsql.process_way(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
@@ -851,6 +859,7 @@ function osm2pgsql.process_way(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
@@ -945,6 +954,7 @@ function osm2pgsql.process_relation(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
@@ -967,6 +977,7 @@ function osm2pgsql.process_relation(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
