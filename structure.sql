@@ -29,3 +29,17 @@ CREATE TABLE map_25k.building (
 );
 
 CREATE INDEX map_25k_building_geom ON map_25k.building USING gist(geom);
+
+CREATE TABLE IF NOT EXISTS map_25k.elevation_point (
+    fid serial PRIMARY KEY,
+    name TEXT,
+    "type" TEXT,
+    elevation NUMERIC,
+    discrete_isolation NUMERIC,
+    geom geometry(Point, 32633)
+);
+
+CREATE INDEX map_25k_elevation_point_geom ON map_25k.elevation_point USING gist(geom);
+CREATE INDEX map_25k_elevation_point_type ON map_25k.elevation_point USING btree(type);
+CREATE INDEX map_25k_elevation_point_elevation ON map_25k.elevation_point USING btree(elevation);
+CREATE INDEX map_25k_elevation_point_discrete_isolation ON map_25k.elevation_point USING btree (discrete_isolation);

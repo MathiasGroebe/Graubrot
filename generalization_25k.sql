@@ -308,3 +308,16 @@ SELECT
 	ST_Multi(geom)
 FROM
 	filter2;
+
+
+----
+-- Peaks
+
+INSERT INTO map_25k.elevation_point (name, "type", elevation, geom)
+SELECT name, "type", round(ele), geom
+FROM osm.elevation_point ep 
+WHERE "type" IN ('peak', 'vulcano') AND ele IS NOT NULL;
+
+UPDATE map_25k.elevation_point 
+SET discrete_isolation = discrete_isolation('map_25k.elevation_point', 'geom', 'elevation', geom, elevation);
+
