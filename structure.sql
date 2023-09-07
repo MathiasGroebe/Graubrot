@@ -30,6 +30,13 @@ CREATE TABLE map_25k.building (
 
 CREATE INDEX map_25k_building_geom ON map_25k.building USING gist(geom);
 
+CREATE TABLE map_25k.build_up_area (
+    fid serial PRIMARY KEY,
+    geom geometry(Multipolygon, 32633)
+);
+
+CREATE INDEX map_25k_build_up_area_geom ON map_25k.building USING gist(geom);
+
 CREATE TABLE IF NOT EXISTS map_25k.elevation_point (
     fid serial PRIMARY KEY,
     name TEXT,

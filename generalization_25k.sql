@@ -321,3 +321,28 @@ WHERE "type" IN ('peak', 'vulcano') AND ele IS NOT NULL;
 UPDATE map_25k.elevation_point 
 SET discrete_isolation = discrete_isolation('map_25k.elevation_point', 'geom', 'elevation', geom, elevation);
 
+----
+-- Buildup area
+--> Needs improvment! 
+INSERT INTO map_25k.build_up_area (geom)
+WITH 
+buffering AS (
+	SELECT fid, ST_Buffer(geom, 40, 'endcap=flat join=mitre') AS geom
+	FROM osm.building
+),
+dissolving AS (
+	SELECT (ST_Dump(ST_Union(a.geom))).geom AS geom
+	FROM buffering a, buffering b
+	WHERE ST_Intersects(a.geom,b.geom) AND a.fid != b.fid
+),
+simplifying AS (
+	SELECT ST_SimplifyVW(ST_Buffer(ST_Buffer(ST_SimplifyVW(ST_Buffer(geom, 20, 'endcap=flat join=mitre'), 400), -1, 'endcap=flat join=mitre'), -39, 'endcap=flat join=mitre'), 400) AS geom
+	FROM dissolving
+),
+single_feature AS (
+	SELECT (ST_Dump(geom)).geom AS geom
+	FROM simplifying
+)
+SELECT geom
+FROM single_feature
+WHERE ST_Area(geom) > 8000;
