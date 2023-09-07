@@ -346,3 +346,35 @@ single_feature AS (
 SELECT geom
 FROM single_feature
 WHERE ST_Area(geom) > 8000;
+
+---- POI
+
+INSERT INTO map_25k.poi (name, geom, "type")
+SELECT name, geom, 'guidepost'
+FROM osm.poi p 
+WHERE information = 'guidepost' AND tags ->> 'tourism' = 'information';
+
+INSERT INTO map_25k.poi (name, geom, "type")
+SELECT name, geom, 'picnic_site'
+FROM osm.poi p 
+WHERE tags ->> 'tourism' = 'picnic_site';
+
+INSERT INTO map_25k.poi (name, geom, "type")
+SELECT name, geom, 'shelter'
+FROM osm.poi p 
+WHERE amenity = 'shelter';
+
+INSERT INTO map_25k.poi (name, geom, "type")
+SELECT name, geom, 'bench'
+FROM osm.poi p 
+WHERE amenity = 'bench';
+
+INSERT INTO map_25k.poi (name, geom, "type")
+SELECT name, geom, 'bus_stop'
+FROM osm.poi p 
+WHERE highway = 'bus_stop';
+
+INSERT INTO map_25k.poi (name, geom, "type")
+SELECT name, geom, railway 
+FROM osm.poi p 
+WHERE railway IN ('station', 'halt');
