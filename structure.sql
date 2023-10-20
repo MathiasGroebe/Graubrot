@@ -27,15 +27,14 @@ CREATE TABLE map_25k.building (
     fid serial PRIMARY KEY,
     geom geometry(Multipolygon, 32633)
 );
-
 CREATE INDEX map_25k_building_geom ON map_25k.building USING gist(geom);
 
+DROP TABLE IF EXISTS map_25k.build_up_area;
 CREATE TABLE map_25k.build_up_area (
     fid serial PRIMARY KEY,
-    geom geometry(Multipolygon, 32633)
+    geom geometry(Polygon, 32633)
 );
-
-CREATE INDEX map_25k_build_up_area_geom ON map_25k.building USING gist(geom);
+CREATE INDEX map_25k_build_up_area_geom ON map_25k.build_up_area USING gist(geom);
 
 CREATE TABLE IF NOT EXISTS map_25k.elevation_point (
     fid serial PRIMARY KEY,

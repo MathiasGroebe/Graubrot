@@ -323,21 +323,25 @@ SET discrete_isolation = discrete_isolation('map_25k.elevation_point', 'geom', '
 
 ----
 -- Buildup area
---> Needs improvment! 
+TRUNCATE map_25k.build_up_area;
 INSERT INTO map_25k.build_up_area (geom)
 WITH 
 buffering AS (
 	SELECT fid, ST_Buffer(geom, 40, 'endcap=flat join=mitre') AS geom
 	FROM osm.building
 ),
-dissolving AS (
-	SELECT (ST_Dump(ST_Union(a.geom))).geom AS geom
-	FROM buffering a, buffering b
-	WHERE ST_Intersects(a.geom,b.geom) AND a.fid != b.fid
+clustering AS (
+	SELECT geom, ST_ClusterDBSCAN(geom, 0, 1) OVER() AS cid
+	FROM buffering 
+),
+merging AS (
+	SELECT ST_Union(geom) AS geom 
+	FROM clustering 
+	GROUP BY cid 
 ),
 simplifying AS (
 	SELECT ST_SimplifyVW(ST_Buffer(ST_Buffer(ST_SimplifyVW(ST_Buffer(geom, 20, 'endcap=flat join=mitre'), 400), -1, 'endcap=flat join=mitre'), -39, 'endcap=flat join=mitre'), 400) AS geom
-	FROM dissolving
+	FROM merging 
 ),
 single_feature AS (
 	SELECT (ST_Dump(geom)).geom AS geom
