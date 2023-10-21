@@ -387,3 +387,12 @@ WHERE railway IN ('station', 'halt');
 INSERT INTO map_25k.admin_boundary_line (name, admin_level, geom)
 SELECT name, admin_level, ST_SimplifyPreserveTopology(geom, 10) AS geom  
 FROM osm.admin_boundary_line abl 
+
+--- Places
+
+INSERT INTO map_25k.place (name, place, population, geom)
+SELECT name, place, population, geom 
+FROM osm.place p;
+
+UPDATE map_25k.place 
+SET discrete_isolation = discrete_isolation('map_25k.place', 'geom', 'population', geom, population);

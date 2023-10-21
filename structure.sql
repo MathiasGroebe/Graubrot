@@ -70,4 +70,16 @@ CREATE TABLE map_25k.admin_boundary_line (
 CREATE INDEX map_25k_admin_boundary_line_geom ON map_25k.admin_boundary_line USING gist(geom);
 CREATE INDEX map_25k_admin_boundary_line_level ON map_25k.admin_boundary_line (admin_level);
 
-
+DROP TABLE IF EXISTS map_25k.place;
+CREATE TABLE map_25k.place (
+    fid serial PRIMARY KEY,
+    name TEXT,
+    place TEXT,
+    population integer,
+    discrete_isolation NUMERIC,
+    geom geometry(Point, 32633)
+);
+CREATE INDEX map_25k_place_geom ON map_25k.place USING spgist (geom);
+CREATE INDEX map_25k_place_place ON map_25k.place USING btree (place);
+CREATE INDEX map_25k_place_population ON map_25k.place USING btree (population);
+CREATE INDEX map_25k_place_discrete_isolation ON map_25k.place USING btree (discrete_isolation);
