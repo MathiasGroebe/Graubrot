@@ -382,3 +382,8 @@ INSERT INTO map_25k.poi (name, geom, "type")
 SELECT name, geom, railway 
 FROM osm.poi p 
 WHERE railway IN ('station', 'halt');
+
+--- Admin bounary 
+INSERT INTO map_25k.admin_boundary_line (name, admin_level, geom)
+SELECT name, admin_level, ST_SimplifyPreserveTopology(geom, 10) AS geom  
+FROM osm.admin_boundary_line abl 

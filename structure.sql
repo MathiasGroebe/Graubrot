@@ -59,3 +59,15 @@ geom geometry(Point, 32633)
 );
 CREATE INDEX map_25k_poi_geom ON map_25k.poi USING gist(geom);
 CREATE INDEX map_25k_poi_type ON map_25k.poi USING btree(type);
+
+DROP TABLE IF EXISTS map_25k.admin_boundary_line;
+CREATE TABLE map_25k.admin_boundary_line (
+    fid serial PRIMARY KEY,
+    name TEXT,
+    admin_level integer,
+    geom geometry(Linestring, 32633)
+);
+CREATE INDEX map_25k_admin_boundary_line_geom ON map_25k.admin_boundary_line USING gist(geom);
+CREATE INDEX map_25k_admin_boundary_line_level ON map_25k.admin_boundary_line (admin_level);
+
+
