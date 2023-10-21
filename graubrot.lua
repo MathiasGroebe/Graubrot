@@ -149,6 +149,9 @@ tables.traffic = osm2pgsql.define_table({
         column = 'name_en',
         type = 'text'
     }, {
+        column = 'ref',
+        type = 'text'
+    }, {
         column = 'service',
         type = 'text'
     }, {
@@ -161,6 +164,9 @@ tables.traffic = osm2pgsql.define_table({
         column = 'trail_visibility',
         type = 'text'
     }, {
+        column = 'surface',
+        type = 'text'
+    }, {        
         column = 'oneway',
         type = 'bool'
     }, {
@@ -172,9 +178,6 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'layer',
         type = 'real'
-    }, {
-        column = 'ref',
-        type = 'text'
     }, {
         column = 'geom',
         type = 'linestring',
@@ -786,16 +789,17 @@ function osm2pgsql.process_way(object)
         tables.traffic:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
+            ref = object.tags.ref,
             highway = object.tags.highway,
             railway = object.tags.railway,
             service = object.tags.service,
             usage = object.tags.usage,
             tracktype = object.tags.tracktype,
+            surface = object.tags.surface,
             oneway = clean_oneway(object), -- make it a bool
             bridge = clean_bridge(object), -- make it a bool
             tunnel = clean_tunnel(object), -- make it a bool
             layer = clean_layer(object), -- convert it to a number
-            ref = object.tags.ref,
             geom = object:as_multilinestring()
         })
     end
