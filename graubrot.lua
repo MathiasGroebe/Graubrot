@@ -184,6 +184,9 @@ tables.traffic = osm2pgsql.define_table({
         projection = epsg_code
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree'
+    },{
         column = 'highway',
         method = 'btree'
     }, {
@@ -204,7 +207,12 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'geom',
         method = 'gist'
-
+    }, {
+        expression = '(NOT tunnel AND NOT bridge)',
+        method = 'btree'
+    }, {
+        expression = '(NOT ST_IsSimple(geom))',
+        method = 'btree'
     }}
 })
 
