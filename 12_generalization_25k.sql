@@ -511,6 +511,7 @@ WHERE p.fid = node;
 -- find death ends and calculate length
 SELECT find_death_ends('traffic_edges', 'traffic_nodes', 'map_25k', 5);
 
+-- Selection citeria of death ends: death_end > 0 and death_end_length < 100
 
 ---- Waterways
 
@@ -552,7 +553,7 @@ UNION ALL
 -- Not to split
 SELECT "name", "waterway", tunnel, layer, geom 
 FROM osm.waterway AS t
-WHERE NOT EXISTS (SELECT 1 FROM tmp.interesection_points AS p WHERE ST_Intersects(p.geom, t.geom));
+WHERE NOT EXISTS (SELECT 1 FROM tmp.waterway_interesection_points AS p WHERE ST_Intersects(p.geom, t.geom));
 
 TRUNCATE map_25k.waterway_nodes;
 -- Nodes from start and end points
