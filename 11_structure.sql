@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS osm;
 CREATE SCHEMA IF NOT EXISTS map_25k;
-CREATE SCHEMA IF NOT EXISTS tmp
+CREATE SCHEMA IF NOT EXISTS tmp;
 
 DROP TABLE IF EXISTS map_25k.forest;
 CREATE TABLE map_25k.forest (
@@ -104,6 +104,8 @@ CREATE TABLE map_25k.traffic_edges
 	layer NUMERIC,
     start_node integer,
     end_node integer,
+    death_end integer DEFAULT 0,
+    death_end_length numeric DEFAULT 0,
 	geom geometry(Linestring, 32633)
 );
 CREATE INDEX map_25k_traffic_edges_geom ON map_25k.traffic_edges USING gist (geom);
@@ -112,13 +114,19 @@ CREATE INDEX map_25k_traffic_edges_tunnel ON map_25k.traffic_edges USING btree (
 CREATE INDEX map_25k_traffic_edges_layer ON map_25k.traffic_edges USING btree (layer);
 CREATE INDEX map_25k_traffic_edges_start_node ON map_25k.traffic_edges USING btree (start_node);
 CREATE INDEX map_25k_traffic_edges_end_node ON map_25k.traffic_edges USING btree (end_node);
+CREATE INDEX map_25k_traffic_edges_death_end ON map_25k.traffic_edges USING btree (death_end);
+CREATE INDEX map_25k_traffic_edges_death_end_length ON map_25k.traffic_edges USING btree (death_end_length);
 
 DROP TABLE IF EXISTS map_25k.traffic_nodes;
 CREATE TABLE map_25k.traffic_nodes
 (
 	fid bigserial PRIMARY KEY,
 	edges_count integer DEFAULT 0,
+    death_end integer DEFAULT 0,
+    death_end_length numeric DEFAULT 0,
 	geom geometry(Point, 32633)
 );
 CREATE INDEX map_25k_traffic_nodes_geom ON map_25k.traffic_nodes USING gist (geom);
 CREATE INDEX map_25k_traffic_nodes_edges_count ON map_25k.traffic_nodes USING btree (edges_count);
+CREATE INDEX map_25k_traffic_nodes_death_end ON map_25k.traffic_nodes USING btree (death_end);
+CREATE INDEX map_25k_traffic_nodes_death_end_length ON map_25k.traffic_nodes USING btree (death_end_length);

@@ -507,3 +507,6 @@ UPDATE map_25k.traffic_nodes p
 SET edges_count = cnt
 FROM agg
 WHERE p.fid = node;
+
+-- find death ends and calculate length
+SELECT find_death_ends('traffic_edges', 'traffic_nodes', 'map_25k', 5);

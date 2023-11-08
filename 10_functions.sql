@@ -180,3 +180,78 @@ END IF;
 
 END;
 $$ LANGUAGE plpgsql PARALLEL SAFE;
+
+
+CREATE OR REPLACE FUNCTION find_death_ends(edge_table text, node_table text, name_schema text, iterations integer) RETURNS void AS $$
+DECLARE
+    v_state   TEXT;
+    v_msg     TEXT;
+    v_detail  TEXT;
+    v_hint    TEXT;
+    v_context TEXT;
+BEGIN
+
+	raise notice 'Iterative finding of continued death ends';
+	raise notice 'Prepare data';
+
+	-- make sure to reset values
+	EXECUTE format('UPDATE %I.%I SET death_end = 0, death_end_length = ST_Length(geom)',
+				  name_schema, edge_table); 
+
+	raise notice 'Death end loop: 1';
+	
+	-- identify death ends
+	EXECUTE format('UPDATE %I.%I v SET death_end = 1 WHERE v.edges_count = 1', 
+				   name_schema, node_table);
+				
+	-- bring information about death ends to edges
+	EXECUTE format('UPDATE %I.%I e SET death_end = 1 FROM %I.%I v WHERE v.death_end = 1 AND (e.start_node = v.fid OR e.end_node = v.fid)',
+				   name_schema, edge_table, name_schema, node_table);
+			
+	-- search for further death ends
+	FOR counter IN 2..iterations LOOP
+		
+		raise notice 'Death end loop: %', counter;
+		
+		EXECUTE format('UPDATE %I.%I v SET death_end = $1, death_end_length = e.death_end_length FROM %I.%I e WHERE v.edges_count = 2 AND e.death_end = $1 - 1 AND (e.start_node = v.fid OR e.end_node = v.fid) AND v.death_end = 0 ', 
+					   name_schema, node_table, name_schema, edge_table) USING counter; 
+		
+		EXECUTE format('UPDATE %I.%I e SET death_end = $1, death_end_length = e.death_end_length + v.death_end_length FROM %I.%I v WHERE (e.start_node = v.fid OR e.end_node = v.fid) AND v.death_end = $1 AND e.death_end = 0 ',
+					  name_schema, edge_table, name_schema, node_table) USING counter;
+		
+	END LOOP;
+
+	FOR counter2 IN REVERSE iterations..1 LOOP
+	
+		raise notice 'Death end length loop: %', counter2;
+	
+		EXECUTE format('UPDATE %I.%I v SET death_end_length = e.death_end_length FROM %I.%I e WHERE (e.start_node = v.fid OR e.end_node = v.fid) AND v.death_end = $1 AND e.death_end = $1;',
+					  name_schema, node_table, name_schema, edge_table) USING counter2; 
+		
+		IF counter2 != 0 THEN
+	    	EXECUTE format('UPDATE %I.%I e SET death_end_length = v.death_end_length FROM %I.%I v WHERE (e.start_node = v.fid OR e.end_node = v.fid) AND v.death_end = $1 AND e.death_end = $1 - 1;',
+						   name_schema, edge_table, name_schema, node_table) USING counter2;
+		END IF;
+		
+	END LOOP;
+
+
+EXCEPTION WHEN OTHERS THEN
+
+    GET STACKED DIAGNOSTICS
+      v_state   = returned_sqlstate,
+      v_msg     = message_text,
+      v_detail  = pg_exception_detail,
+      v_hint    = pg_exception_hint,
+      v_context = pg_exception_context;
+
+    RAISE NOTICE 'Exception:
+      state   : %
+      message : %
+      detail  : %
+      hint    : %
+      context : %', v_state, v_msg, v_detail, v_hint, v_context;
+	
+END;
+$$
+LANGUAGE plpgsql;
