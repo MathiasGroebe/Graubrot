@@ -149,6 +149,9 @@ tables.traffic = osm2pgsql.define_table({
         column = 'name_en',
         type = 'text'
     }, {
+        column = 'ref',
+        type = 'text'
+    }, {
         column = 'service',
         type = 'text'
     }, {
@@ -161,6 +164,9 @@ tables.traffic = osm2pgsql.define_table({
         column = 'trail_visibility',
         type = 'text'
     }, {
+        column = 'surface',
+        type = 'text'
+    }, {        
         column = 'oneway',
         type = 'bool'
     }, {
@@ -173,14 +179,14 @@ tables.traffic = osm2pgsql.define_table({
         column = 'layer',
         type = 'real'
     }, {
-        column = 'ref',
-        type = 'text'
-    }, {
         column = 'geom',
         type = 'linestring',
         projection = epsg_code
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree'
+    },{
         column = 'highway',
         method = 'btree'
     }, {
@@ -201,7 +207,12 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'geom',
         method = 'gist'
-
+    }, {
+        expression = '(NOT tunnel AND NOT bridge)',
+        method = 'btree'
+    }, {
+        expression = '(NOT ST_IsSimple(geom))',
+        method = 'btree'
     }}
 })
 
@@ -249,11 +260,15 @@ tables.waterway = osm2pgsql.define_table({
     }, {
         column = 'tunnel',
         method = 'btree'
-
+    }, {
+        column = 'layer',
+        method = 'btree'
+    }, {        
+        expression = '(NOT ST_IsSimple(geom))',
+        method = 'btree'
     }, {
         column = 'geom',
         method = 'gist'
-
     }}
 })
 
@@ -329,8 +344,8 @@ tables.address = osm2pgsql.define_table({
     name = 'address',
     schema = import_schema,
     ids = {
-        type = 'node',
-        id_column = 'node_id'
+        type = 'any',
+        id_column = 'osm_id'
     },
     columns = {{
         column = 'fid',
@@ -349,10 +364,21 @@ tables.address = osm2pgsql.define_table({
         column = 'city',
         type = 'text'
     }, {
-        column = 'geom',
-        type = 'point',
+        column = 'osm_geom',
+        type = 'geometry',
         projection = epsg_code
-    }}
+    },{
+        column = 'geom',
+        create_only = true,
+        sql_type = 'geometry(point, ' .. epsg_code .. ') GENERATED ALWAYS AS (ST_PointOnSurface(osm_geom)) STORED'
+    }},    indexes = {{
+        column = 'osm_geom',
+        method = 'gist'
+    }, {
+        column = 'geom',
+        method = 'spgist'
+    }
+}
 })
 
 tables.elevation_point = osm2pgsql.define_table({
@@ -395,7 +421,7 @@ tables.elevation_point = osm2pgsql.define_table({
 
     }, {
         column = 'geom',
-        method = 'gist'
+        method = 'spgist'
     }}
 })
 
@@ -439,7 +465,7 @@ tables.place = osm2pgsql.define_table({
 
     }, {
         column = 'geom',
-        method = 'gist'
+        method = 'spgist'
     }}
 })
 
@@ -488,6 +514,9 @@ tables.poi = osm2pgsql.define_table({
         column = 'highway',
         type = 'text'
     }, {
+        column = 'railway',
+        type = 'text'
+    }, {        
         column = 'barrier',
         type = 'text'
     }, {
@@ -533,6 +562,9 @@ tables.poi = osm2pgsql.define_table({
         column = 'highway',
         method = 'btree'
     }, {
+        column = 'railway',
+        method = 'btree'        
+    }, {
         column = 'barrier',
         method = 'btree'
     }, {
@@ -541,6 +573,9 @@ tables.poi = osm2pgsql.define_table({
     }, {
         column = 'osm_geom',
         method = 'gist'
+    }, {
+        column = 'geom',
+        method = 'spgist'
     }}
 })
 
@@ -570,7 +605,7 @@ local function clean_tunnel(object)
 end
 
 local function clean_bridge(object)
-    -- Make  bridge a bool
+    -- Make bridge a bool
     local bridge = false
     if object.tags.bridge == 'yes' then
         bridge = true
@@ -593,6 +628,7 @@ local function clean_bridge(object)
 end
 
 local function clean_oneway(object)
+    -- Make Oneway a bool
     local oneway = false
     if object.tags.oneway == 'yes' then
         oneway = true
@@ -600,6 +636,16 @@ local function clean_oneway(object)
         oneway = false
     end
     return oneway
+end
+
+local function clean_layer(object)
+    -- Make layer a number
+    layer = 0
+    if object.tags.layer then
+        layer = tonumber(object.tags.layer)
+    end
+
+    return layer
 end
 
 function str_to_bool(str)
@@ -634,7 +680,7 @@ function osm2pgsql.process_node(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            geom = object:as_point()
+            osm_geom = object:as_point()
         })
     end
 
@@ -684,6 +730,7 @@ function osm2pgsql.process_node(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
@@ -701,7 +748,16 @@ function osm2pgsql.process_way(object)
         return
     end
 
-    -- A closed way that also has the right tags for an area is a polygon.
+    if object.is_closed and (object.tags['addr:housenumber'] or object.tags['addr:street']) then
+        tables.address:insert({
+            street = object.tags['addr:street'],
+            housenumber = object.tags['addr:housenumber'],
+            postcode = object.tags['addr:postcode'],
+            city = object.tags['addr:city'],
+            osm_geom = object:as_multipolygon()
+        })
+    end    
+    
     if object.is_closed and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
         tables.forest:insert({
             name = object.tags.name,
@@ -745,16 +801,17 @@ function osm2pgsql.process_way(object)
         tables.traffic:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
+            ref = object.tags.ref,
             highway = object.tags.highway,
             railway = object.tags.railway,
             service = object.tags.service,
             usage = object.tags.usage,
             tracktype = object.tags.tracktype,
+            surface = object.tags.surface,
             oneway = clean_oneway(object), -- make it a bool
             bridge = clean_bridge(object), -- make it a bool
             tunnel = clean_tunnel(object), -- make it a bool
-            layer = tonumber(object.tags.layer), -- convert it to a number
-            ref = object.tags.ref,
+            layer = clean_layer(object), -- convert it to a number
             geom = object:as_multilinestring()
         })
     end
@@ -765,7 +822,7 @@ function osm2pgsql.process_way(object)
             name_en = object.tags['name:en'],
             waterway = object.tags.waterway,
             tunnel = clean_tunnel(object),
-            layer = tonumber(object.tags.layer),
+            layer = clean_layer(object),
             intermittent = str_to_bool(object.tags.intermittent),
             geom = object:as_multilinestring()
         })
@@ -795,12 +852,13 @@ function osm2pgsql.process_way(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
             tags = object.tags,
-            geom = object:as_multipolygon()
+            osm_geom = object:as_multipolygon()
         })
     end
 
@@ -817,6 +875,7 @@ function osm2pgsql.process_way(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
@@ -837,6 +896,17 @@ function osm2pgsql.process_relation(object)
     local type = object:grab_tag('type')
 
     -- Store multipolygon relations as polygons
+
+    if type == 'multipolygon' and (object.tags['addr:housenumber'] or object.tags['addr:street']) then
+        tables.address:insert({
+            street = object.tags['addr:street'],
+            housenumber = object.tags['addr:housenumber'],
+            postcode = object.tags['addr:postcode'],
+            city = object.tags['addr:city'],
+            osm_geom = object:as_multipolygon()
+        })
+    end
+
     if type == 'multipolygon' and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
         tables.forest:insert({
             name = object.tags.name,
@@ -900,6 +970,7 @@ function osm2pgsql.process_relation(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
@@ -922,6 +993,7 @@ function osm2pgsql.process_relation(object)
             amenity = object.tags.amenity,
             religion = object.tags.religion,
             highway = object.tags.highway,
+            railway = object.tags.railway,
             public_transport = object.tags.public_transport,
             shop = object.tags.shop,
             barrier = object.tags.barrier,
