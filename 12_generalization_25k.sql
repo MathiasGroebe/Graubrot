@@ -1,4 +1,5 @@
 -- Forest
+------------------------
 TRUNCATE map_25k.forest;
 
 INSERT INTO
@@ -64,6 +65,8 @@ FROM
 	simplify;
 
 -- Water
+------------------------------
+
 TRUNCATE map_25k.water;
 
 INSERT INTO
@@ -127,6 +130,9 @@ SELECT
 	ST_Multi(geom)
 FROM
 	simplify;
+
+---- Grass
+------------------
 
 TRUNCATE map_25k.grass;
 
@@ -192,11 +198,14 @@ SELECT
 FROM
 	simplify;
 
+---- Buildings
+-------------------
+
 TRUNCATE map_25k.building;
 
 INSERT INTO
 	map_25k.building (geom) WITH clustering AS (
-		-- angrenzende Flächen finden
+		-- find connected areas
 		SELECT
 			ST_ClusterDBSCAN(geom, 0, 1) OVER() AS cluster_id,
 			geom
@@ -309,7 +318,7 @@ FROM
 
 ----
 -- Peaks
-
+TRUNCATE map_25k.elevation_point;
 INSERT INTO map_25k.elevation_point (name, "type", elevation, geom)
 SELECT name, "type", round(ele), geom
 FROM osm.elevation_point ep 
@@ -352,6 +361,7 @@ WHERE ST_Area(geom) > 8000;
 
 TRUNCATE map_25k.poi;
 
+-- Cluster nearby guidepost by mering them into the first one
 INSERT INTO map_25k.poi (name, geom, "type")
 WITH
 clustering AS (
@@ -365,7 +375,7 @@ FROM clustering
 GROUP BY cid
 )
 SELECT name, geom, 'guidepost'
-FROM chose_first
+FROM chose_first;
 
 INSERT INTO map_25k.poi (name, geom, "type")
 SELECT name, geom, 'picnic_site'
@@ -399,6 +409,7 @@ FROM osm.admin_boundary_line abl;
 
 --- Places
 
+TRUNCATE map_25k.place;
 INSERT INTO map_25k.place (name, place, population, geom)
 SELECT name, place, population, geom 
 FROM osm.place p;
