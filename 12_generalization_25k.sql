@@ -511,6 +511,7 @@ WHERE p.fid = node;
 -- find death ends and calculate length
 SELECT find_death_ends('traffic_edges', 'traffic_nodes', 'map_25k', 5);
 
+-- Selection citeria of death ends: death_end > 0 and death_end_length < 100
 
 ---- Waterways
 
