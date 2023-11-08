@@ -260,11 +260,15 @@ tables.waterway = osm2pgsql.define_table({
     }, {
         column = 'tunnel',
         method = 'btree'
-
+    }, {
+        column = 'layer',
+        method = 'btree'
+    }, {        
+        expression = '(NOT ST_IsSimple(geom))',
+        method = 'btree'
     }, {
         column = 'geom',
         method = 'gist'
-
     }}
 })
 
@@ -818,7 +822,7 @@ function osm2pgsql.process_way(object)
             name_en = object.tags['name:en'],
             waterway = object.tags.waterway,
             tunnel = clean_tunnel(object),
-            layer = tonumber(object.tags.layer),
+            layer = clean_layer(object),
             intermittent = str_to_bool(object.tags.intermittent),
             geom = object:as_multilinestring()
         })

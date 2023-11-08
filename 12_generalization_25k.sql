@@ -510,3 +510,95 @@ WHERE p.fid = node;
 
 -- find death ends and calculate length
 SELECT find_death_ends('traffic_edges', 'traffic_nodes', 'map_25k', 5);
+
+
+---- Waterways
+
+TRUNCATE tmp.waterway_interesection_points;
+
+INSERT INTO tmp.waterway_interesection_points (geom)
+SELECT DISTINCT ST_Multi(ST_Intersection(t1.geom, t2.geom)) AS geom
+FROM osm.waterway t1 JOIN osm.waterway t2 ON
+ST_Crosses(t1.geom, t2.geom) OR ST_Touches(t1.geom, t2.geom) 
+AND t1.fid != t2.fid AND t1.layer = t2.layer;
+
+INSERT INTO tmp.waterway_interesection_points (geom)
+WITH points AS (
+		SELECT fid, ST_StartPoint(geom) AS geom
+		FROM osm.waterway
+		WHERE ST_IsSimple(geom) = FALSE 
+		UNION 
+		SELECT fid, ST_EndPoint(geom) AS geom
+		FROM osm.waterway
+		WHERE ST_IsSimple(geom) = FALSE 
+	),
+	distinct_points AS (
+		SELECT DISTINCT fid, geom
+		FROM points
+	)
+SELECT ST_Multi(geom)
+FROM distinct_points;
+
+TRUNCATE map_25k.waterway_edges;
+
+INSERT INTO map_25k.waterway_edges ("name", "type", tunnel, layer, geom)
+-- Split
+SELECT "name", "waterway", tunnel, layer,
+(ST_Dump(ST_CollectionExtract(ST_Split(geom,
+(SELECT ST_Union(p.geom) FROM tmp.waterway_interesection_points AS p WHERE ST_Intersects(p.geom, t.geom))
+					 ), 2))).geom AS geom
+FROM osm.waterway AS t
+UNION ALL
+-- Not to split
+SELECT "name", "waterway", tunnel, layer, geom 
+FROM osm.waterway AS t
+WHERE NOT EXISTS (SELECT 1 FROM tmp.interesection_points AS p WHERE ST_Intersects(p.geom, t.geom));
+
+TRUNCATE map_25k.waterway_nodes;
+-- Nodes from start and end points
+INSERT INTO map_25k.waterway_nodes (geom)
+WITH 
+	points AS (
+	SELECT ST_StartPoint(geom) AS geom
+	FROM map_25k.waterway_edges 
+	UNION 
+	SELECT ST_EndPoint(geom) AS geom
+	FROM map_25k.waterway_edges 
+	),
+	distinct_points AS (
+	SELECT DISTINCT geom
+	FROM points
+	)
+SELECT geom 
+FROM points;
+
+-- Set start node
+UPDATE map_25k.waterway_edges l
+SET start_node = p.fid 
+FROM map_25k.waterway_nodes p
+WHERE ST_Intersects(ST_StartPoint(l.geom), p.geom);
+
+-- Set end node
+UPDATE map_25k.waterway_edges l
+SET end_node = p.fid 
+FROM map_25k.waterway_nodes p
+WHERE ST_Intersects(ST_EndPoint(l.geom), p.geom);
+
+-- Count edges at node
+WITH collect AS (
+	SELECT start_node AS node
+	FROM map_25k.waterway_edges
+	UNION ALL 
+	SELECT end_node AS node 
+	FROM map_25k.waterway_edges
+), agg AS (
+	SELECT node, count(*) AS cnt
+	FROM collect
+	GROUP BY node
+)
+UPDATE map_25k.waterway_nodes p
+SET edges_count = cnt
+FROM agg
+WHERE p.fid = node;
+
+SELECT find_death_ends('waterway_edges', 'waterway_nodes', 'map_25k', 5);

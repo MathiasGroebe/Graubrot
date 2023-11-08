@@ -130,3 +130,47 @@ CREATE INDEX map_25k_traffic_nodes_geom ON map_25k.traffic_nodes USING gist (geo
 CREATE INDEX map_25k_traffic_nodes_edges_count ON map_25k.traffic_nodes USING btree (edges_count);
 CREATE INDEX map_25k_traffic_nodes_death_end ON map_25k.traffic_nodes USING btree (death_end);
 CREATE INDEX map_25k_traffic_nodes_death_end_length ON map_25k.traffic_nodes USING btree (death_end_length);
+
+---- Waterways
+
+DROP TABLE IF EXISTS tmp.waterway_interesection_points;
+CREATE TABLE tmp.waterway_interesection_points
+(geom geometry(MultiPoint, 32633));
+CREATE INDEX tmp_waterway_interesection_points_geom ON tmp.waterway_interesection_points USING gist (geom);
+
+DROP TABLE IF EXISTS map_25k.waterway_edges;
+CREATE TABLE map_25k.waterway_edges
+(
+	fid bigserial PRIMARY KEY,
+	name TEXT,
+    type text,
+	tunnel boolean, 
+	layer NUMERIC,
+    start_node integer,
+    end_node integer,
+    death_end integer DEFAULT 0,
+    death_end_length integer DEFAULT 0,
+	geom geometry(Linestring, 32633)
+);
+CREATE INDEX map_25k_waterway_edges_geom ON map_25k.waterway_edges USING gist (geom);
+CREATE INDEX map_25k_waterway_edges_type ON map_25k.waterway_edges USING btree (type);
+CREATE INDEX map_25k_waterway_edges_tunnel ON map_25k.waterway_edges USING btree (tunnel);
+CREATE INDEX map_25k_waterway_edges_layer ON map_25k.waterway_edges USING btree (layer);
+CREATE INDEX map_25k_waterway_edges_start_node ON map_25k.waterway_edges USING btree (start_node);
+CREATE INDEX map_25k_waterway_edges_end_node ON map_25k.waterway_edges USING btree (end_node);
+CREATE INDEX map_25k_waterway_edges_death_end ON map_25k.waterway_edges USING btree (death_end);
+CREATE INDEX map_25k_waterway_edges_death_end_length ON map_25k.waterway_edges USING btree (death_end_length);
+
+DROP TABLE IF EXISTS map_25k.waterway_nodes;
+CREATE TABLE map_25k.waterway_nodes
+(
+	fid bigserial PRIMARY KEY,
+	edges_count integer DEFAULT 0,
+    death_end integer DEFAULT 0,
+    death_end_length integer DEFAULT 0,
+	geom geometry(Point, 32633)
+);
+CREATE INDEX map_25k_waterway_nodes_geom ON map_25k.waterway_nodes USING gist (geom);
+CREATE INDEX map_25k_waterway_nodes_edges_count ON map_25k.waterway_nodes USING btree (edges_count);
+CREATE INDEX map_25k_waterway_nodes_death_end ON map_25k.waterway_nodes USING btree (death_end);
+CREATE INDEX map_25k_waterway_nodes_death_end_length ON map_25k.waterway_nodes USING btree (death_end_length);
