@@ -552,7 +552,7 @@ UNION ALL
 -- Not to split
 SELECT "name", "waterway", tunnel, layer, geom 
 FROM osm.waterway AS t
-WHERE NOT EXISTS (SELECT 1 FROM tmp.interesection_points AS p WHERE ST_Intersects(p.geom, t.geom));
+WHERE NOT EXISTS (SELECT 1 FROM tmp.waterway_interesection_points AS p WHERE ST_Intersects(p.geom, t.geom));
 
 TRUNCATE map_25k.waterway_nodes;
 -- Nodes from start and end points
