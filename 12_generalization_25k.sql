@@ -201,10 +201,9 @@ INSERT INTO
 			ST_ClusterDBSCAN(geom, 0, 1) OVER() AS cluster_id,
 			geom
 		FROM
-			osm.building --WHERE geom && st_geometryfromtext('POLYGON((390292.9840225501684472 5818353.7415813272818923, 391188.64492927165701985 5818353.7415813272818923, 391188.64492927165701985 5819023.35923915077000856, 390292.9840225501684472 5819023.35923915077000856, 390292.9840225501684472 5818353.7415813272818923))', 32633) 
+			osm.building 
 	),
 	dissolve AS (
-		-- Flächen zusammenfassen
 		SELECT
 			ROW_NUMBER() OVER() AS fid,
 			ST_Union(geom) AS geom
@@ -214,7 +213,6 @@ INSERT INTO
 			cluster_id
 	),
 	buffer_simplify AS (
-		-- Vereinfachung mittel Buffer
 		SELECT
 			fid,
 			ST_Buffer(
@@ -234,7 +232,7 @@ INSERT INTO
 			dissolve
 	),
 	simplify AS (
-		-- Reduzierung von Punkten und Vereinfachung 
+		-- Redue number of points
 		SELECT
 			fid,
 			ST_SimplifyVW(geom, 3) AS geom
@@ -242,17 +240,16 @@ INSERT INTO
 			buffer_simplify
 	),
 	make_valid AS (
-		-- nur valide Gebäude verwenden
 		SELECT
 			fid,
 			geom
 		FROM
 			simplify
 		WHERE
-			ST_IsEmpty(geom) = FALSE -- filtert kollabierte Geometrien
+			ST_IsEmpty(geom) = FALSE -- Remove collapsed geometries
 	),
 	filter1 AS (
-		-- schmale und große Gebäude wieder hinzufügen
+		-- Add big narrow buildings again
 		SELECT
 			fid,
 			ST_SimplifyVW(geom, 3) AS geom
@@ -270,7 +267,7 @@ INSERT INTO
 			AND ST_Area(geom) >= 100
 	),
 	filter2 AS (
-		-- kleine Gebäude als rotierte Quadrate hinzufügen
+		-- Show too small buildings by an abstract rotated square
 		SELECT
 			fid,
 			ST_Rotate(
@@ -292,8 +289,8 @@ INSERT INTO
 			AND ST_Area(geom) < 100
 			AND ST_Area(geom) > 50
 	)
-SELECT
-	ST_Multi(geom) -- Zusammenführen der Ergebnisse 
+SELECT -- Merge all kinds togehter
+	ST_Multi(geom) 
 FROM
 	make_valid
 UNION
