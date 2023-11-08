@@ -350,10 +350,22 @@ WHERE ST_Area(geom) > 8000;
 
 ---- POI
 
+TRUNCATE map_25k.poi;
+
 INSERT INTO map_25k.poi (name, geom, "type")
-SELECT name, geom, 'guidepost'
+WITH
+clustering AS (
+SELECT name, geom, ST_ClusterDBScan(geom, 10, 1) OVER() AS cid
 FROM osm.poi p 
-WHERE information = 'guidepost' AND tags ->> 'tourism' = 'information';
+WHERE information = 'guidepost' AND tags ->> 'tourism' = 'information'
+),
+chose_first AS ( -- ALWAYS chose first element in cluster 
+SELECT cid, (array_agg(name))[1] AS name, ST_NumGeometries(ST_Collect(geom)) AS gp_count, ST_GeometryN(ST_Collect(geom), 1) AS geom 
+FROM clustering
+GROUP BY cid
+)
+SELECT name, geom, 'guidepost'
+FROM chose_first
 
 INSERT INTO map_25k.poi (name, geom, "type")
 SELECT name, geom, 'picnic_site'
