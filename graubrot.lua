@@ -4,6 +4,7 @@ print('osm2pgsql version: ' .. osm2pgsql.version)
 local tables = {}
 local import_schema = 'osm' -- Defines the import schema
 local epsg_code = 32633 -- Defines the projection
+local w2r = {}
 
 -- Table defenitions
 tables.forest = osm2pgsql.define_table({
@@ -178,6 +179,12 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'layer',
         type = 'real'
+    }, { 
+        column = 'osmc_symbols', 
+        sql_type = 'text[]' 
+    },{ 
+        column = 'rel_ids', 
+        sql_type = 'int8[]' 
     }, {
         column = 'geom',
         type = 'linestring',
@@ -666,6 +673,14 @@ function clean_tags(tags)
     return next(tags) == nil
 end
 
+function osm2pgsql.select_relation_members(relation)
+    -- Only interested in relations with type=route
+    if relation.tags.type == 'route' and relation.tags.route == 'hiking' then
+        return { ways = osm2pgsql.way_member_ids(relation) }
+    end
+end
+
+
 -- Function which fill the tables
 
 function osm2pgsql.process_node(object)
@@ -798,7 +813,7 @@ function osm2pgsql.process_way(object)
     end
 
     if object.tags.highway or object.tags.railway then
-        tables.traffic:insert({
+        row = {
             name = object.tags.name,
             name_en = object.tags['name:en'],
             ref = object.tags.ref,
@@ -813,7 +828,23 @@ function osm2pgsql.process_way(object)
             tunnel = clean_tunnel(object), -- make it a bool
             layer = clean_layer(object), -- convert it to a number
             geom = object:as_multilinestring()
-        })
+        }
+
+        local d = w2r[object.id]
+        if d then
+            local refs = {}
+            local ids = {}
+            for rel_id, rel_ref in pairs(d) do
+                refs[#refs + 1] = rel_ref
+                ids[#ids + 1] = rel_id
+            end
+            table.sort(refs)
+            table.sort(ids)
+            row.osmc_symbols = '{'.. table.concat(refs, ',') .. '}'
+            row.rel_ids = '{' .. table.concat(ids, ',') .. '}'
+        end
+
+        tables.traffic:insert(row)
     end
 
     if object.tags.waterway then
@@ -1002,5 +1033,18 @@ function osm2pgsql.process_relation(object)
             osm_geom = object:as_multilinestring()
         })
     end
+
+
+    if type == 'route' and object.tags.route == 'hiking' then
+        for _, member in ipairs(object.members) do
+            if member.type == 'w' then
+                if not w2r[member.ref] then
+                    w2r[member.ref] = {}
+                end
+                w2r[member.ref][object.id] = object.tags['osmc:symbol']
+            end
+        end
+    end
+
 
 end
