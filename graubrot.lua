@@ -530,6 +530,15 @@ tables.poi = osm2pgsql.define_table({
         column = 'information',
         type = 'text'
     }, {
+        column = 'power',
+        type = 'text'
+    }, {
+        column = 'communication',
+        type = 'text'
+    }, {
+        column = 'landuse',
+        type = 'text'                        
+    }, {
         column = 'tags',
         type = 'jsonb'
     }, {
@@ -577,6 +586,15 @@ tables.poi = osm2pgsql.define_table({
     }, {
         column = 'information',
         method = 'btree'
+    }, {
+        column = 'power',
+        method = 'btree'        
+    }, {
+        column = 'communication',
+        method = 'btree'
+    }, {
+        column = 'landuse',
+        method = 'btree' 
     }, {
         column = 'osm_geom',
         method = 'gist'
@@ -733,7 +751,8 @@ function osm2pgsql.process_node(object)
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
-        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+    object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+    object.tags.communication or object.tags.landuse then
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -750,6 +769,9 @@ function osm2pgsql.process_node(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_point()
         })
@@ -869,9 +891,9 @@ function osm2pgsql.process_way(object)
     end
 
     if object.is_closed and
-        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or
-            object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or
-            object.tags.public_transport) then
+        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+        object.tags.communication or object.tags.landuse) then
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -888,13 +910,17 @@ function osm2pgsql.process_way(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_multipolygon()
         })
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
-        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+    object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+    object.tags.communication or object.tags.landuse then
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -911,6 +937,9 @@ function osm2pgsql.process_way(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_multilinestring()
         })
@@ -987,9 +1016,9 @@ function osm2pgsql.process_relation(object)
     end
 
     if type == 'multipolygon' and
-        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or
-            object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or
-            object.tags.public_transport) then
+        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+        object.tags.communication or object.tags.landuse) then
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -1006,13 +1035,17 @@ function osm2pgsql.process_relation(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_multipolygon()
         })
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
-        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+        object.tags.communication or object.tags.landuse then 
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -1029,6 +1062,9 @@ function osm2pgsql.process_relation(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_multilinestring()
         })
