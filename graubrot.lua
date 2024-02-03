@@ -179,6 +179,9 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'layer',
         type = 'real'
+    }, {
+        column = 'z_order',
+        type = 'real'        
     }, { 
         column = 'osmc_symbols', 
         type = 'jsonb' 
@@ -211,6 +214,9 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'layer',
         method = 'btree'
+    }, {
+        column = 'z_order',
+        method = 'btree'        
     }, {
         column = 'geom',
         method = 'gist'
@@ -673,6 +679,43 @@ local function clean_layer(object)
     return layer
 end
 
+local function z_order_calculation(object)
+    -- Calculate z_order 
+    -- layer *10; bridge +10, tunnel -10
+    -- ranking (0...9): motorway:9, path:0
+    -- default = 0
+    -- See: https://github.com/osm2pgsql-dev/osm2pgsql/blob/master/style.lua and 
+    -- https://imposm.org/docs/imposm3/latest/mapping.html#wayzorder
+
+    z_order = 0
+
+    if object.tags.railway then z_order = 5 end
+    if object.tags.highway == 'minor' then z_order = 3 end
+    if object.tags.highway == 'road' then z_order = 3 end
+    if object.tags.highway == 'unclassified' then z_order = 3 end
+    if object.tags.highway == 'residential' then z_order = 3 end
+    if object.tags.highway == 'tertiary' then z_order = 4 end
+    if object.tags.highway == 'tertiary_link' then z_order = 4 end
+    if object.tags.highway == 'secondary' then z_order = 6 end
+    if object.tags.highway == 'secondary_link' then z_order = 6 end
+    if object.tags.highway == 'primary' then z_order = 7 end
+    if object.tags.highway == 'primary_link' then z_order = 7 end
+    if object.tags.highway == 'trunk' then z_order = 8 end
+    if object.tags.highway == 'trunk_link' then z_order = 8 end
+    if object.tags.highway == 'motorway' then z_order = 9 end
+    if object.tags.highway == 'motorway_link' then z_order = 9 end
+
+    bridge = clean_bridge(object)
+    tunnel = clean_tunnel(object)
+    layer = clean_layer(object)
+
+    if bridge then z_order = z_order + 10 end 
+    if tunnel then z_order = z_order -10 end
+    z_order = z_order + layer * 10
+
+    return z_order
+end
+
 function str_to_bool(str)
     if str == nil then
         return false
@@ -849,6 +892,7 @@ function osm2pgsql.process_way(object)
             bridge = clean_bridge(object), -- make it a bool
             tunnel = clean_tunnel(object), -- make it a bool
             layer = clean_layer(object), -- convert it to a number
+            z_order = z_order_calculation(object),
             geom = object:as_multilinestring()
         }
 
