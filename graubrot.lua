@@ -181,7 +181,7 @@ tables.traffic = osm2pgsql.define_table({
         type = 'real'
     }, { 
         column = 'osmc_symbols', 
-        sql_type = 'text[]' 
+        type = 'jsonb' 
     },{ 
         column = 'rel_ids', 
         sql_type = 'int8[]' 
@@ -862,7 +862,7 @@ function osm2pgsql.process_way(object)
             end
             table.sort(refs)
             table.sort(ids)
-            row.osmc_symbols = '{'.. table.concat(refs, ',') .. '}'
+            row.osmc_symbols = refs
             row.rel_ids = '{' .. table.concat(ids, ',') .. '}'
         end
 
