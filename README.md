@@ -1,14 +1,16 @@
+
 # Graubrot
+
 A osm2pgsql configuration for the flex-backend for everyday use. Imports common objects for make a simple big scale map with no generlization. It tries to clean the attributes to create a easy to handle data model. Part of the repository is also a sample rendering using QGIS. Please scroll down for further explanations.
 
 ## Running
 
-###  Quickstart
+### Quickstart
 
 1. Create a PostgrSQL Database
 2. Enable PostGIS by executing ```CREATE EXTENSION POSTGIS```
 3. Create a schema for the data import ```CREATE SCHEMA osm```. You can also use another Schema. It is just the default value.
-4. Make sure that you have recent version of osm2pgsql. Minimum is osm2pgsql version 1.8!
+4. Make sure that you have recent version of osm2pgsql. Minimum is osm2pgsql version 1.8.
 5. Run ```osm2pgsql -c -O flex -S graubrot.lua -d postgres://USER:PASS@HOST/DB_NAME  sachsen-latest.osm.pbf```
 
 ### Hints
@@ -17,12 +19,13 @@ A osm2pgsql configuration for the flex-backend for everyday use. Imports common 
 - It is better to use enviroment variables for accessing the database. Check the [libpg-parameter](https://www.postgresql.org/docs/current/libpq-envars.html).
 - Indexes are build for rows, which are designed to categories the features in a map style. 
 - It is possible to do alway a reimport with of the data. You can use it also with minutly, hourly or daily updates. Check the [documentation](https://osm2pgsql.org/doc/manual.html#updating-an-existing-database) for details.
+- If you need nice-looking contourlines for you map, take a look at my repository [Smooth-Contours](https://github.com/MathiasGroebe/Smooth-Contours).
 - Feel free to suggest improvments or modify it for you own use. It should demonstrate what is possible and beware of starting everyone from scratch.
 
 
 ## Layers and attributes 
 
-###  Forest
+### Forest
 
 Forest layer with name of the objects, by combining the two common classifications.
 
@@ -114,20 +117,22 @@ graph TD;
 | Attribute | Type | Index | Describtion |
 | :---      | :--- | :---  | :---        |
 | way_id | int | | Id of OSM object, needed for running updates |
-| fid | int | | Feature id |
+| fid | int | B-Tree | Feature id |
 | highway | text | B-Tree | Content of the ```highway``` tag | 
 | railway | text | B-Tree | Content of the ```railway``` tag | 
 | name | text | | Name of the object |
 | name_en | text | | Englisch name of the object | 
+| ref | bool | | Content of the ```ref``` tag | 
 | service | text | | Content of the ```service``` tag | 
 | usage | text | | Content of the ```usage``` tag | 
 | tracktype | text | | Content of the ```tracktype``` tag | 
 | trail_visibility | text | | Content of the ```trail_visibility``` tag |
+| surface | text | | Content of the ```surface``` tag |
 | oneway | bool | B-Tree | Content of the ```oneway``` tag converted to a bool | 
 | bridge | bool | B-Tree | Content of the ```bridge``` tag converted to a bool | 
 | tunnel | bool | B-Tree |  Content of the ```tunnel``` tag converted to a bool | 
 | layer | real | B-Tree | Content of the ```layer``` tag converted to a number | 
-| ref | bool | | Content of the ```ref``` tag | 
+| z_layer | real | B-Tree | Calculate rendering order | 
 | geom | Linestring geometry | GiST | Linestring geometry of the OSM object |
 
 ### Waterway
@@ -169,7 +174,8 @@ graph TD;
 | housenumber | text | | Content of the ```addr:housenumber``` tag | 
 | postcode | text | | Content of the ```addr:postcode``` tag | 
 | city | text | | Content of the ```addr:city``` tag | 
-| geom | Point geometry | GiST | Multipolygon geometry of the OSM object |
+| osm_geom | Geometry | GiST | Geometry of the OSM object |
+| geom | Point geometry | GiST | ST_PointonfSurface of OSM object |
 
 
 ### Elevation point
@@ -244,6 +250,11 @@ graph TD;
     natural=*-->poi;
     natural=*-->poi;
     barrier=*-->poi;
+    highway=*-->poi;
+    railway=*-->poi;
+    power=*-->poi;
+    landuse=*-->poi;
+    communication=*-->poi;
     public_transport=*-->poi;
 ```
 
@@ -262,6 +273,10 @@ graph TD;
 | shop | text | B-Tree | Content of the ```shop``` tag | 
 | public_transport | text | B-Tree | Content of the ```public_transport``` tag | 
 | highway | text | B-Tree | Content of the ```highway``` tag | 
+| railway | text | B-Tree | Content of the ```railway``` tag | 
+| power | text | B-Tree | Content of the ```power``` tag | 
+| landuse | text | B-Tree | Content of the ```landuse``` tag | 
+| communication | text | B-Tree | Content of the ```communication``` tag | 
 | barrier | text | B-Tree | Content of the ```barrier``` tag | 
 | information | text | B-Tree | Content of the ```information``` tag | 
 | tags | JSONB | | All tags of the OSM object |
