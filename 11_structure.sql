@@ -44,6 +44,9 @@ CREATE TABLE IF NOT EXISTS map_25k.elevation_point (
     "type" TEXT,
     elevation NUMERIC,
     discrete_isolation NUMERIC,
+    label_x NUMERIC,
+    label_y NUMERIC,
+    label_rotation NUMERIC,
     geom geometry(Point, 32633)
 );
 CREATE INDEX map_25k_elevation_point_geom ON map_25k.elevation_point USING gist(geom);
@@ -54,9 +57,12 @@ CREATE INDEX map_25k_elevation_point_discrete_isolation ON map_25k.elevation_poi
 DROP TABLE IF EXISTS map_25k.poi;
 CREATE TABLE map_25k.poi (
 fid serial PRIMARY KEY,
-name TEXT,
-"type" TEXT,
-geom geometry(Point, 32633)
+    name TEXT,
+    "type" TEXT,
+    label_x NUMERIC,
+    label_y NUMERIC,
+    label_rotation NUMERIC,
+    geom geometry(Point, 32633)
 );
 CREATE INDEX map_25k_poi_geom ON map_25k.poi USING gist(geom);
 CREATE INDEX map_25k_poi_type ON map_25k.poi USING btree(type);
@@ -78,6 +84,9 @@ CREATE TABLE map_25k.place (
     place TEXT,
     population integer,
     discrete_isolation NUMERIC,
+    label_x NUMERIC,
+    label_y NUMERIC,
+    label_rotation NUMERIC,
     geom geometry(Point, 32633)
 );
 CREATE INDEX map_25k_place_geom ON map_25k.place USING spgist (geom);
@@ -106,6 +115,9 @@ CREATE TABLE map_25k.traffic_edges
     end_node integer,
     death_end integer DEFAULT 0,
     death_end_length numeric DEFAULT 0,
+    label_x NUMERIC,
+    label_y NUMERIC,
+    label_rotation NUMERIC,    
 	geom geometry(Linestring, 32633)
 );
 CREATE INDEX map_25k_traffic_edges_geom ON map_25k.traffic_edges USING gist (geom);
@@ -150,6 +162,9 @@ CREATE TABLE map_25k.waterway_edges
     end_node integer,
     death_end integer DEFAULT 0,
     death_end_length integer DEFAULT 0,
+    label_x NUMERIC,
+    label_y NUMERIC,
+    label_rotation NUMERIC,
 	geom geometry(Linestring, 32633)
 );
 CREATE INDEX map_25k_waterway_edges_geom ON map_25k.waterway_edges USING gist (geom);

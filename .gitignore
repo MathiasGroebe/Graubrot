@@ -42,3 +42,8 @@ luac.out
 # OSM Files
 *.osm 
 *.pbf
+
+# Geopackage
+*.gpkg
+*.gpkg-shm
+*.gpkg-wal

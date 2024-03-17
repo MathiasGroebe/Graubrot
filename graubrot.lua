@@ -4,6 +4,7 @@ print('osm2pgsql version: ' .. osm2pgsql.version)
 local tables = {}
 local import_schema = 'osm' -- Defines the import schema
 local epsg_code = 32633 -- Defines the projection
+local w2r = {}
 
 -- Table defenitions
 tables.forest = osm2pgsql.define_table({
@@ -179,6 +180,15 @@ tables.traffic = osm2pgsql.define_table({
         column = 'layer',
         type = 'real'
     }, {
+        column = 'z_order',
+        type = 'real'        
+    }, { 
+        column = 'osmc_symbols', 
+        type = 'jsonb' 
+    },{ 
+        column = 'rel_ids', 
+        sql_type = 'int8[]' 
+    }, {
         column = 'geom',
         type = 'linestring',
         projection = epsg_code
@@ -204,6 +214,9 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'layer',
         method = 'btree'
+    }, {
+        column = 'z_order',
+        method = 'btree'        
     }, {
         column = 'geom',
         method = 'gist'
@@ -523,6 +536,15 @@ tables.poi = osm2pgsql.define_table({
         column = 'information',
         type = 'text'
     }, {
+        column = 'power',
+        type = 'text'
+    }, {
+        column = 'communication',
+        type = 'text'
+    }, {
+        column = 'landuse',
+        type = 'text'                        
+    }, {
         column = 'tags',
         type = 'jsonb'
     }, {
@@ -570,6 +592,15 @@ tables.poi = osm2pgsql.define_table({
     }, {
         column = 'information',
         method = 'btree'
+    }, {
+        column = 'power',
+        method = 'btree'        
+    }, {
+        column = 'communication',
+        method = 'btree'
+    }, {
+        column = 'landuse',
+        method = 'btree' 
     }, {
         column = 'osm_geom',
         method = 'gist'
@@ -648,6 +679,43 @@ local function clean_layer(object)
     return layer
 end
 
+local function z_order_calculation(object)
+    -- Calculate z_order 
+    -- layer *10; bridge +10, tunnel -10
+    -- ranking (0...9): motorway:9, path:0
+    -- default = 0
+    -- See: https://github.com/osm2pgsql-dev/osm2pgsql/blob/master/style.lua and 
+    -- https://imposm.org/docs/imposm3/latest/mapping.html#wayzorder
+
+    z_order = 0
+
+    if object.tags.railway then z_order = 5 end
+    if object.tags.highway == 'minor' then z_order = 3 end
+    if object.tags.highway == 'road' then z_order = 3 end
+    if object.tags.highway == 'unclassified' then z_order = 3 end
+    if object.tags.highway == 'residential' then z_order = 3 end
+    if object.tags.highway == 'tertiary' then z_order = 4 end
+    if object.tags.highway == 'tertiary_link' then z_order = 4 end
+    if object.tags.highway == 'secondary' then z_order = 6 end
+    if object.tags.highway == 'secondary_link' then z_order = 6 end
+    if object.tags.highway == 'primary' then z_order = 7 end
+    if object.tags.highway == 'primary_link' then z_order = 7 end
+    if object.tags.highway == 'trunk' then z_order = 8 end
+    if object.tags.highway == 'trunk_link' then z_order = 8 end
+    if object.tags.highway == 'motorway' then z_order = 9 end
+    if object.tags.highway == 'motorway_link' then z_order = 9 end
+
+    bridge = clean_bridge(object)
+    tunnel = clean_tunnel(object)
+    layer = clean_layer(object)
+
+    if bridge then z_order = z_order + 10 end 
+    if tunnel then z_order = z_order -10 end
+    z_order = z_order + layer * 10
+
+    return z_order
+end
+
 function str_to_bool(str)
     if str == nil then
         return false
@@ -665,6 +733,14 @@ function clean_tags(tags)
 
     return next(tags) == nil
 end
+
+function osm2pgsql.select_relation_members(relation)
+    -- Only interested in relations with type=route
+    if relation.tags.type == 'route' and relation.tags.route == 'hiking' then
+        return { ways = osm2pgsql.way_member_ids(relation) }
+    end
+end
+
 
 -- Function which fill the tables
 
@@ -718,7 +794,8 @@ function osm2pgsql.process_node(object)
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
-        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+    object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+    object.tags.communication or object.tags.landuse then
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -735,6 +812,9 @@ function osm2pgsql.process_node(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_point()
         })
@@ -798,7 +878,7 @@ function osm2pgsql.process_way(object)
     end
 
     if object.tags.highway or object.tags.railway then
-        tables.traffic:insert({
+        row = {
             name = object.tags.name,
             name_en = object.tags['name:en'],
             ref = object.tags.ref,
@@ -812,8 +892,25 @@ function osm2pgsql.process_way(object)
             bridge = clean_bridge(object), -- make it a bool
             tunnel = clean_tunnel(object), -- make it a bool
             layer = clean_layer(object), -- convert it to a number
+            z_order = z_order_calculation(object),
             geom = object:as_multilinestring()
-        })
+        }
+
+        local d = w2r[object.id]
+        if d then
+            local refs = {}
+            local ids = {}
+            for rel_id, rel_ref in pairs(d) do
+                refs[#refs + 1] = rel_ref
+                ids[#ids + 1] = rel_id
+            end
+            table.sort(refs)
+            table.sort(ids)
+            row.osmc_symbols = refs
+            row.rel_ids = '{' .. table.concat(ids, ',') .. '}'
+        end
+
+        tables.traffic:insert(row)
     end
 
     if object.tags.waterway then
@@ -838,9 +935,9 @@ function osm2pgsql.process_way(object)
     end
 
     if object.is_closed and
-        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or
-            object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or
-            object.tags.public_transport) then
+        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+        object.tags.communication or object.tags.landuse) then
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -857,13 +954,17 @@ function osm2pgsql.process_way(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_multipolygon()
         })
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
-        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+    object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+    object.tags.communication or object.tags.landuse then
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -880,6 +981,9 @@ function osm2pgsql.process_way(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_multilinestring()
         })
@@ -956,9 +1060,9 @@ function osm2pgsql.process_relation(object)
     end
 
     if type == 'multipolygon' and
-        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or
-            object.tags.historic or object.tags.natural or object.tags.shop or object.tags.barrier or
-            object.tags.public_transport) then
+        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+        object.tags.communication or object.tags.landuse) then
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -975,13 +1079,17 @@ function osm2pgsql.process_relation(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_multipolygon()
         })
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
-        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport then
+        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
+        object.tags.communication or object.tags.landuse then 
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -998,9 +1106,25 @@ function osm2pgsql.process_relation(object)
             shop = object.tags.shop,
             barrier = object.tags.barrier,
             information = object.tags.information,
+            power = object.tags.power,
+            communication = object.tags.communication,
+            landuse = object.tags.landuse,
             tags = object.tags,
             osm_geom = object:as_multilinestring()
         })
     end
+
+
+    if type == 'route' and object.tags.route == 'hiking' then
+        for _, member in ipairs(object.members) do
+            if member.type == 'w' then
+                if not w2r[member.ref] then
+                    w2r[member.ref] = {}
+                end
+                w2r[member.ref][object.id] = object.tags['osmc:symbol']
+            end
+        end
+    end
+
 
 end
