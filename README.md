@@ -42,4 +42,4 @@ There is a QGIS Demo project visualizing some of the imported OpenStreetMap amin
     user=a_user
     password=a_password
 
-The color can be easily adjusted by chaning the project colors in QGIS. Feel free to further adjust the map to your needs, other scales and so on. It should make the start easier. If you have adjusted the projection use the [ChangeDataSource](https://plugins.qgis.org/plugins/changeDataSource/) Plugin to reload the layer adjust the projection for each layer.
+The color can be easily adjusted by chaning the project colors in QGIS. Feel free to further adjust the map to your needs, other scales and so on. It should make the start easier. If you have adjusted the projection during the import you have set it in QGIS for each layer.

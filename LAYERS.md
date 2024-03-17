@@ -108,7 +108,8 @@ graph TD;
 | bridge | bool | B-Tree | Content of the ```bridge``` tag converted to a bool | 
 | tunnel | bool | B-Tree |  Content of the ```tunnel``` tag converted to a bool | 
 | layer | real | B-Tree | Content of the ```layer``` tag converted to a number | 
-| z_layer | real | B-Tree | Calculate rendering order | 
+| z_order | real | B-Tree | Calculate rendering order | 
+| osmc_symbols | JSON |  | Symols of marked ways | 
 | geom | Linestring geometry | GiST | Linestring geometry of the OSM object |
 
 ### Waterway
