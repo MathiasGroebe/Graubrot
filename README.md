@@ -31,8 +31,8 @@ Forest layer with name of the objects, by combining the two common classificatio
 
 ```mermaid
 graph TD;
-    landuse=forest-->forest;
-    natural=wood-->forest
+    a[landuse=forest]-->b[forest];
+    c[natural=wood]-->b[forest]
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -49,8 +49,8 @@ Water area layer with name of the objects, by combining the two common classific
 
 ```mermaid
 graph TD;
-    natural=water-->water;
-    waterway=riverbank-->water;
+    a[natural=water]-->b[water];
+    c[waterway=riverbank]-->b[water];
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -67,10 +67,10 @@ Area layer for different kind of grass like vegetation with name of the objects.
 
 ```mermaid
 graph TD;
-    natural=meadow-->grass;
-    natural=heath-->grass;
-    natural=grassland-->grass;
-    landuse=meadow-->grass;
+    a[natural=meadow]-->grass;
+    c[natural=heath]-->grass;
+    d[natural=grassland]-->grass;
+    e[landuse=meadow]-->grass;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -87,7 +87,7 @@ Buildings layer with name, and adress of the objects.
 
 ```mermaid
 graph TD;
-    buidling=*-->building;
+    a[buidling=*]-->building;
     
 ```
 
@@ -110,8 +110,8 @@ Line layer with roads and railways with name of the objects, and essential other
 
 ```mermaid
 graph TD;
-    highway=*-->traffic;
-    railway=*-->traffic;
+    a[highway=*]-->traffic;
+    b[railway=*]-->traffic;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -141,7 +141,7 @@ Waterway linstring layer with name of the objects, and common attributes.
 
 ```mermaid
 graph TD;
-    waterway=*-->waterway;
+    a[waterway=*]-->waterway;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -162,8 +162,8 @@ Address point layer with street, housenumber, postcode, and city.
 
 ```mermaid
 graph TD;
-    addr:housenumber-->address;
-    addr:street-->address;
+    a[addr:housenumber]-->address;
+    b[addr:street]-->address;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -184,10 +184,10 @@ Peaks, vulcanos, saddles and view points in one table with their elevation.
 
 ```mermaid
 graph TD;
-    natural=peak-->elevation_point;
-    natural=vulcano-->elevation_point;
-    natural=saddle-->elevation_point;
-    tourism=viewpoint-->elevation_point;
+    a[natural=peak]-->elevation_point;
+    b[natural=vulcano]-->elevation_point;
+    c[natural=saddle]-->elevation_point;
+    d[tourism=viewpoint]-->elevation_point;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -208,7 +208,7 @@ Administrative boundaries as lines. Useful for rendering.
 
 ```mermaid
 graph TD;
-    boundary=administrative-->admin_boundary_line;
+    a[boundary=administrative]-->admin_boundary_line;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -225,7 +225,7 @@ Administrative boundaries as lines. Useful for processing and analysis.
 
 ```mermaid
 graph TD;
-    boundary=administrative-->admin_boundary_area;
+    a[boundary=administrative]-->admin_boundary_area;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -242,20 +242,20 @@ Collects many tags and offer them as a point geometry.
 
 ```mermaid
 graph TD;
-    amenity=*-->poi;
-    leisure=*-->poi;
-    tourism=*-->poi;
-    man_made=*-->poi;
-    historic=*-->poi;
-    natural=*-->poi;
-    natural=*-->poi;
-    barrier=*-->poi;
-    highway=*-->poi;
-    railway=*-->poi;
-    power=*-->poi;
-    landuse=*-->poi;
-    communication=*-->poi;
-    public_transport=*-->poi;
+    a[amenity=*]-->poi;
+    b[leisure=*]-->poi;
+    c[tourism=*]-->poi;
+    d[man_made=*]-->poi;
+    e[historic=*]-->poi;
+    f[natural=*]-->poi;
+    g[natural=*]-->poi;
+    h[barrier=*]-->poi;
+    i[highway=*]-->poi;
+    j[railway=*]-->poi;
+    k[power=*]-->poi;
+    m[landuse=*]-->poi;
+    l[communication=*]-->poi;
+    o[public_transport=*]-->poi;
 ```
 
 | Attribute | Type | Index | Describtion |
