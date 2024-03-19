@@ -1,7 +1,7 @@
 
 # Graubrot
 
-A osm2pgsql configuration for the flex-backend for everyday use. Imports common objects for make a simple big scale map with no generlization. It tries to clean the attributes to create a easy to handle data model. See the [schema desciption page](LAYERS.md) for further details. Part of the repository is also a sample rendering using QGIS. 
+An osm2pgsql configuration for the flex-backend for everyday use. Imports common objects to make simple, big-scaled maps with no generalization. It tries to clean up the attributes to create an easy-to-handle data model. See the [schema description page](LAYERS.md) for further details. Part of the repository is also a sample rendering using QGIS.
 
 ## Features
 
@@ -42,4 +42,4 @@ There is a QGIS Demo project visualizing some of the imported OpenStreetMap amin
     user=a_user
     password=a_password
 
-The color can be easily adjusted by chaning the project colors in QGIS. Feel free to further adjust the map to your needs, other scales and so on. It should make the start easier. If you have adjusted the projection during the import you have set it in QGIS for each layer.
+The color can be easily adjusted by changing the project colors in QGIS. Feel free to further adjust the map to your needs, other scales and so on. It should make the start easier. If you have adjusted the projection during the import, you have set it in QGIS for each layer in the data source and the layer settings.
