@@ -47,3 +47,7 @@ luac.out
 *.gpkg
 *.gpkg-shm
 *.gpkg-wal
+
+# Office
+*.odp
+*.graphml
