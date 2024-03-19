@@ -675,8 +675,11 @@ local function clean_layer(object)
     if object.tags.layer then
         layer = tonumber(object.tags.layer)
     end
-
-    return layer
+    if type(layer) == "number" then 
+        return layer
+    else
+        return 0
+    end
 end
 
 local function z_order_calculation(object)
