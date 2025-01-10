@@ -25,6 +25,9 @@ tables.forest = osm2pgsql.define_table({
         column = 'name_en',
         type = 'text'
     }, {
+        column = 'type',
+        type = 'text'        
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
@@ -73,6 +76,9 @@ tables.grass = osm2pgsql.define_table({
         column = 'name_en',
         type = 'text'
     }, {
+        column = 'type',
+        type = 'text'
+    }, {        
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
@@ -682,6 +688,37 @@ local function clean_layer(object)
     end
 end
 
+local function grass_type(object)
+
+    if object.tags.natural then
+        return object.tags.natural
+    end
+
+    if object.tags.landuse then 
+        return object.tags.landuse
+    end 
+
+    if object.tags.leisure then
+        return object.tags.leisure
+    else
+        return ''
+    end
+
+end
+
+local function forest_type(object)
+
+    if object.tags.natural == 'wood' then 
+        return 'wood' 
+    end
+
+    if object.tags.landuse == 'forst' then 
+        return 'forest' 
+    else return 'forest' 
+    end 
+    
+end
+
 local function z_order_calculation(object)
     -- Calculate z_order 
     -- layer *10; bridge +10, tunnel -10
@@ -845,6 +882,7 @@ function osm2pgsql.process_way(object)
         tables.forest:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
+            type = forest_type(object),
             geom = object:as_multipolygon()
         })
     end
@@ -859,9 +897,11 @@ function osm2pgsql.process_way(object)
 
     if object.is_closed and
         (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
-            object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or object.tags.landuse == 'recreation_ground') then
+            object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or 
+            object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments') then
         tables.grass:insert({
             name = object.tags.name,
+            type = grass_type(object),
             name_en = object.tags['name:en'],
             geom = object:as_multipolygon()
         })
@@ -1018,6 +1058,7 @@ function osm2pgsql.process_relation(object)
         tables.forest:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
+            type = forest_type(object),
             geom = object:as_multipolygon()
         })
     end
@@ -1031,10 +1072,12 @@ function osm2pgsql.process_relation(object)
     end
 
     if type == 'multipolygon' and
-        (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
-            object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or object.tags.landuse == 'recreation_ground') then
+    (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
+    object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or 
+    object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments') then
         tables.grass:insert({
             name = object.tags.name,
+            type = grass_type(object),
             name_en = object.tags['name:en'],
             geom = object:as_multipolygon()
         })
