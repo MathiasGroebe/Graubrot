@@ -25,6 +25,9 @@ tables.forest = osm2pgsql.define_table({
         column = 'name_en',
         type = 'text'
     }, {
+        column = 'type',
+        type = 'text'        
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
@@ -703,6 +706,19 @@ local function grass_type(object)
 
 end
 
+local function forest_type(object)
+
+    if object.tags.natural == 'wood' then 
+        return 'wood' 
+    end
+
+    if object.tags.landuse == 'forst' then 
+        return 'forest' 
+    else return 'forest' 
+    end 
+    
+end
+
 local function z_order_calculation(object)
     -- Calculate z_order 
     -- layer *10; bridge +10, tunnel -10
@@ -866,6 +882,7 @@ function osm2pgsql.process_way(object)
         tables.forest:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
+            type = forest_type(object),
             geom = object:as_multipolygon()
         })
     end
@@ -1041,6 +1058,7 @@ function osm2pgsql.process_relation(object)
         tables.forest:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
+            type = forest_type(object),
             geom = object:as_multipolygon()
         })
     end
