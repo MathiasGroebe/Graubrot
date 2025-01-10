@@ -8,7 +8,7 @@ Forest layer with name of the objects, by combining the two common classificatio
 ```mermaid
 graph TD;
     a[landuse=forest]-->b[forest];
-    c[natural=wood]-->b[forest]
+    c[natural=wood]-->b[forest];
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -16,7 +16,8 @@ graph TD;
 | area_id | int | | Id of OSM object, needed for running updates |
 | fid | int | | Feature id |
 | name | text | | Name of the object |
-| name_en | text | | Englisch name of the object | 
+| name_en | text | | Englisch name of the object |
+| type | text | | Value of the key `natural`/`landuse` |
 | geom | Multipolygon geometry | GiST | Multipolygon geometry of the OSM object |
 
 ### Water
@@ -34,7 +35,7 @@ graph TD;
 | area_id | int | | Id of OSM object, needed for running updates |
 | fid | int | | Feature id |
 | name | text | | Name of the object |
-| name_en | text | | Englisch name of the object | 
+| name_en | text | | Englisch name of the object |
 | geom | Multipolygon geometry | GiST| Multipolygon geometry of the OSM object |
 
 ### Grass
@@ -46,7 +47,12 @@ graph TD;
     a[natural=meadow]-->grass;
     c[natural=heath]-->grass;
     d[natural=grassland]-->grass;
+    de[natural=grass]-->grass;
     e[landuse=meadow]-->grass;
+    f[landuse=cementery]-->grass;
+    g[landuse=recreation_ground]-->grass;
+    h[landuse=allotments]-->grass;
+    i[leisure=park]-->grass;
 ```
 
 | Attribute | Type | Index | Describtion |
@@ -55,6 +61,7 @@ graph TD;
 | fid | int | | Feature id |
 | name | text | | Name of the object |
 | name_en | text | | Englisch name of the object | 
+| type | text | | Value of the key `natural`/`landuse`/`leisure` |
 | geom | Multipolygon geometry | GiST| Multipolygon geometry of the OSM object |
 
 ### Building
@@ -152,7 +159,7 @@ graph TD;
 | postcode | text | | Content of the ```addr:postcode``` tag | 
 | city | text | | Content of the ```addr:city``` tag | 
 | osm_geom | Geometry | GiST | Geometry of the OSM object |
-| geom | Point geometry | GiST | ST_PointonfSurface of OSM object |
+| geom | Point geometry | SP-GiST | ST_PointonfSurface of OSM object |
 
 
 ### Elevation point
@@ -176,7 +183,7 @@ graph TD;
 | type | text | B-Tree | Content of the ```natural``` tag or the ```tourism``` tag | 
 | direction | text | | Content of the ```direction``` tag | 
 | ele | real | B-Tree | Content of the ```ele``` tag converted to a number | 
-| geom | Point geometry | GiST | Multipolygon geometry of the OSM object |
+| geom | Point geometry | SP-GiST | Multipolygon geometry of the OSM object |
 
 
 ### Admin boundary line
@@ -258,4 +265,4 @@ graph TD;
 | information | text | B-Tree | Content of the ```information``` tag | 
 | tags | JSONB | | All tags of the OSM object |
 | osm_geom | Geometry collection | GiST | Geometry of the OSM object |
-| geom | Point geometry | | Point geometry of the OSM object generatet via ST_PointOnSurface on demand |
+| geom | Point geometry | SP-GiST | Point geometry of the OSM object generatet via ST_PointOnSurface on demand |
