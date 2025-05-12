@@ -60,8 +60,34 @@ graph TD;
 | area_id | int | | Id of OSM object, needed for running updates |
 | fid | int | | Feature id |
 | name | text | | Name of the object |
-| name_en | text | | Englisch name of the object | 
+| name_en | text | | Englisch name of the object |
 | type | text | | Value of the key `natural`/`landuse`/`leisure` |
+| geom | Multipolygon geometry | GiST| Multipolygon geometry of the OSM object |
+
+### Built up area
+
+Areas with buildings or similar landuse.
+
+```mermaid
+graph TD;
+    a[landuse=institutional]-->built_up_area;
+    c[landuse=garages]-->built_up_area;
+    d[landuse=railway]-->built_up_area;
+    de[landuse=commercial]-->built_up_area;
+    e[landuse=education]-->built_up_area;
+    f[landuse=fairground]-->built_up_area;
+    g[landuse=industrial]-->built_up_area;
+    h[landuse=residential]-->built_up_area;
+    i[landuse=retail]-->built_up_area;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| area_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| name | text | | Name of the object |
+| name_en | text | | Englisch name of the object |
+| type | text | | Value of the key `landuse` |
 | geom | Multipolygon geometry | GiST| Multipolygon geometry of the OSM object |
 
 ### Building
