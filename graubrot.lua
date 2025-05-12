@@ -941,7 +941,7 @@ function osm2pgsql.process_way(object)
             object.tags.landuse == 'industrial' or object.tags.landuse == 'residential' or object.tags.landuse == 'retail') then
         tables.built_up_area:insert({
             name = object.tags.name,
-            type = grass_type(object),
+            type = object.tags.landuse,
             name_en = object.tags['name:en'],
             geom = object:as_multipolygon()
         })
@@ -1110,6 +1110,18 @@ function osm2pgsql.process_relation(object)
             geom = object:as_multipolygon()
         })
     end
+
+    if type == 'multipolygon' and
+        ( object.tags.landuse == 'institutional' or object.tags.landuse == 'garages' or object.tags.landuse == 'railway' or 
+            object.tags.landuse == 'commercial' or object.tags.landuse == 'education' or object.tags.landuse == 'fairground' or 
+            object.tags.landuse == 'industrial' or object.tags.landuse == 'residential' or object.tags.landuse == 'retail') then
+        tables.built_up_area:insert({
+            name = object.tags.name,
+            type = object.tags.landuse,
+            name_en = object.tags['name:en'],
+            geom = object:as_multipolygon()
+        })
+    end 
 
     if type == 'multipolygon' and
     (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
