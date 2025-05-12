@@ -3,7 +3,7 @@ print('osm2pgsql version: ' .. osm2pgsql.version)
 -- Variables
 local tables = {}
 local import_schema = 'osm' -- Defines the import schema
-local epsg_code = 32633 -- Defines the projection
+local epsg_code = 25832 -- Defines the projection
 local w2r = {}
 
 -- Table defenitions
@@ -79,6 +79,34 @@ tables.grass = osm2pgsql.define_table({
         column = 'type',
         type = 'text'
     }, {        
+        column = 'geom',
+        type = 'multipolygon',
+        projection = epsg_code
+    }}
+})
+
+-- Table defenitions
+tables.built_up_area = osm2pgsql.define_table({
+    name = 'built_up_area',
+    schema = import_schema,
+    ids = {
+        type = 'area',
+        id_column = 'area_id'
+    },
+    columns = {{
+        column = 'fid',
+        sql_type = 'serial',
+        create_only = true
+    }, {
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'name_en',
+        type = 'text'
+    }, {
+        column = 'type',
+        type = 'text'        
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
@@ -906,6 +934,18 @@ function osm2pgsql.process_way(object)
             geom = object:as_multipolygon()
         })
     end
+
+    if object.is_closed and
+        ( object.tags.landuse == 'institutional' or object.tags.landuse == 'garages' or object.tags.landuse == 'railway' or 
+            object.tags.landuse == 'commercial' or object.tags.landuse == 'education' or object.tags.landuse == 'fairground' or 
+            object.tags.landuse == 'industrial' or object.tags.landuse == 'residential' or object.tags.landuse == 'retail') then
+        tables.built_up_area:insert({
+            name = object.tags.name,
+            type = grass_type(object),
+            name_en = object.tags['name:en'],
+            geom = object:as_multipolygon()
+        })
+    end    
 
     if object.is_closed and object.tags.building then
         tables.building:insert({
