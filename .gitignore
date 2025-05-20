@@ -51,3 +51,8 @@ luac.out
 # Office
 *.odp
 *.graphml
+
+.metadata
+General 
+*.pdf
+dbeaver-workspace.properties
