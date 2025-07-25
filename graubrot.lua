@@ -926,7 +926,8 @@ function osm2pgsql.process_way(object)
     if object.is_closed and
         (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
             object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or 
-            object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments') then
+            object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments' or
+            object.tags.leisure == 'pitch' ) then
         tables.grass:insert({
             name = object.tags.name,
             type = grass_type(object),
