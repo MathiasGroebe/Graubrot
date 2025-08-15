@@ -4,13 +4,13 @@
 
 # name of pg service, which should be used to access the database
 pg_service="graubrot"
-bbox="7.5,49.3,10.3,51.3"
+bbox="9.604447,52.305137,9.918426,52.454335"
 osm_file="germany-latest.osm.pbf"
 
 export PGSERVICE=$pg_service
 
 
-if [ -f "osm_update.state" ]; then
+if [ ! -f "osm_update.state" ]; then
     echo "No state found, proceeding with import."
 
     echo "Clipping to bounding box..."
