@@ -3,7 +3,7 @@ print('osm2pgsql version: ' .. osm2pgsql.version)
 -- Variables
 local tables = {}
 local import_schema = 'osm' -- Defines the import schema
-local epsg_code = 25832 -- Defines the projection
+local epsg_code = 25833 -- Defines the projection
 local w2r = {}
 
 local function format_date(ts)
