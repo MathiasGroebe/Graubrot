@@ -3,7 +3,7 @@
 # name of pg service, which should be used to access the database
 pg_service="graubrot"
 schema="osm"
-bbox="392883 5637159 409979 5652546" # xmin ymin xmax ymax in imported coordinate system, not alway WGS84, leave empty for no clipping 
+bbox="399752 5646857 403889 5650193" # xmin ymin xmax ymax in imported coordinate system, not alway WGS84, leave empty for no clipping 
 clip=""
 # output file format, short name, see https://gdal.org/drivers/vector/index.html
 export_format="GPKG"
@@ -20,7 +20,7 @@ else
 
     echo "Clipping data to bounding box for export"
     echo ""
-    clip="$clip"
+    clip="-clipsrc $bbox"
 
 fi
 
