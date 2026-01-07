@@ -3,9 +3,9 @@
 ## --- Import with updates --- ##
 
 # name of pg service, which should be used to access the database
-pg_service="graubrot"
-bbox="9.604447,52.305137,9.918426,52.454335"
-osm_file="germany-latest.osm.pbf"
+pg_service="zwiesel"
+bbox="13.789586,50.810938,14.096173,50.940055"
+osm_file="sachsen-251223.osm.pbf"
 
 export PGSERVICE=$pg_service
 
@@ -14,7 +14,7 @@ if [ ! -f "osm_update.state" ]; then
     echo "No state found, proceeding with import."
 
     echo "Clipping to bounding box..."
-    osmium extract -b $bbox --overwrite -o region.osm.pbf $osm_file
+    osmium extract -b $bbox -s smart --overwrite -o region.osm.pbf $osm_file
 
     echo "Import into database..."
     osm2pgsql -O flex --create --slim -x -S graubrot.lua region.osm.pbf
@@ -45,7 +45,7 @@ else
 
     echo "Clipping changes..."
     # Clipping the changes to the region
-    osmium extract -b $bbox --overwrite -o $(date +%F)_clipped.osc.gz $(date +%F)_germany.osc.gz
+    osmium extract -b $bbox -s smart --overwrite -o $(date +%F)_clipped.osc.gz $(date +%F)_germany.osc.gz
     # Deleting the non-clipped data
     rm $(date +%F)_germany.osc.gz
 
