@@ -3,7 +3,7 @@
 ## --- Import with updates --- ##
 
 # name of pg service, which should be used to access the database
-pg_service="zwiesel"
+pg_service="graubrot"
 bbox="13.789586,50.810938,14.096173,50.940055"
 osm_file="sachsen-251223.osm.pbf"
 
