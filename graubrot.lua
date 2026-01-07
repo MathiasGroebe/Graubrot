@@ -3,10 +3,14 @@ print('osm2pgsql version: ' .. osm2pgsql.version)
 -- Variables
 local tables = {}
 local import_schema = 'osm' -- Defines the import schema
-local epsg_code = 25832 -- Defines the projection
+local epsg_code = 25833 -- Defines the projection
 local w2r = {}
 
--- Table defenitions
+local function format_date(ts)
+    return os.date('!%Y-%m-%dT%H:%M:%SZ', ts)
+end
+
+-- Table definitions
 tables.forest = osm2pgsql.define_table({
     name = 'forest',
     schema = import_schema,
@@ -26,11 +30,19 @@ tables.forest = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'type',
-        type = 'text'        
+        type = 'text'
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp',
     }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
+    }},
+    indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
     }}
 })
 
@@ -50,11 +62,39 @@ tables.water = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'name_en',
-        type = 'text'
+        type = 'text'    },
+    {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true          
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true    
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true      
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true   
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp'
     }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
+    }},
+    indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
     }}
 })
 
@@ -78,10 +118,18 @@ tables.grass = osm2pgsql.define_table({
     }, {
         column = 'type',
         type = 'text'
-    }, {        
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp',
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
+    }},
+    indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
     }}
 })
 
@@ -107,9 +155,17 @@ tables.built_up_area = osm2pgsql.define_table({
         column = 'type',
         type = 'text'        
     }, {
+        column = 'last_update',
+        sql_type = 'timestamp',
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
+    }},
+    indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
     }}
 })
 
@@ -146,11 +202,38 @@ tables.building = osm2pgsql.define_table({
         column = 'city',
         type = 'text'
     }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true         
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true       
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp'        
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    }, {
         column = 'building',
         method = 'btree'
     }, {
@@ -215,7 +298,30 @@ tables.traffic = osm2pgsql.define_table({
         type = 'real'
     }, {
         column = 'z_order',
-        type = 'real'        
+        type = 'real'
+    }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true           
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp'                
     }, { 
         column = 'osmc_symbols', 
         type = 'jsonb' 
@@ -229,7 +335,8 @@ tables.traffic = osm2pgsql.define_table({
     }},
     indexes = {{
         column = 'fid',
-        method = 'btree'
+        method = 'btree',
+        unique = true
     },{
         column = 'highway',
         method = 'btree'
@@ -292,13 +399,39 @@ tables.waterway = osm2pgsql.define_table({
     }, {
         column = 'layer',
         type = 'real'
-
+    }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp'        
     }, {
         column = 'geom',
         type = 'linestring',
         projection = epsg_code
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    }, {
         column = 'waterway',
         method = 'btree'
     }, {
@@ -340,11 +473,18 @@ tables.admin_boundary_line = osm2pgsql.define_table({
         column = 'admin_level',
         type = 'integer'
     }, {
+        column = 'last_update',
+        sql_type = 'timestamp',
+    }, {
         column = 'geom',
         type = 'multilinestring',
         projection = epsg_code
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    }, {
         column = 'admin_level',
         method = 'btree'
     }, {
@@ -374,11 +514,38 @@ tables.admin_boundary_area = osm2pgsql.define_table({
         column = 'admin_level',
         type = 'integer'
     }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true            
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp'        
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    }, {
         column = 'admin_level',
         method = 'btree'
     }, {
@@ -411,6 +578,9 @@ tables.address = osm2pgsql.define_table({
         column = 'city',
         type = 'text'
     }, {
+        column = 'last_update',
+        sql_type = 'timestamp'
+    }, {
         column = 'osm_geom',
         type = 'geometry',
         projection = epsg_code
@@ -418,7 +588,12 @@ tables.address = osm2pgsql.define_table({
         column = 'geom',
         create_only = true,
         sql_type = 'geometry(point, ' .. epsg_code .. ') GENERATED ALWAYS AS (ST_PointOnSurface(osm_geom)) STORED'
-    }},    indexes = {{
+    }},    
+    indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    }, {
         column = 'osm_geom',
         method = 'gist'
     }, {
@@ -455,11 +630,37 @@ tables.elevation_point = osm2pgsql.define_table({
         column = 'ele',
         type = 'real'
     }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true          
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_rotation',
+        type = 'real'
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp'        
+    }, {
         column = 'geom',
         type = 'point',
         projection = epsg_code
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    }, {
         column = 'type',
         method = 'btree'
     }, {
@@ -494,7 +695,31 @@ tables.place = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'population',
-        type = 'integer'
+        type = 'integer',
+        create_only = true
+    }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp'
     }, {
         column = 'tags',
         type = 'jsonb'
@@ -504,12 +729,15 @@ tables.place = osm2pgsql.define_table({
         projection = epsg_code
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    },{
         column = 'place',
         method = 'btree'
     }, {
         column = 'population',
         method = 'btree'
-
     }, {
         column = 'geom',
         method = 'spgist'
@@ -579,6 +807,29 @@ tables.poi = osm2pgsql.define_table({
         column = 'landuse',
         type = 'text'                        
     }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true         
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true      
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp'
+    }, {
         column = 'tags',
         type = 'jsonb'
     }, {
@@ -591,6 +842,10 @@ tables.poi = osm2pgsql.define_table({
         sql_type = 'geometry(point, ' .. epsg_code .. ') GENERATED ALWAYS AS (ST_PointOnSurface(osm_geom)) STORED'
     }},
     indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    }, {
         column = 'leisure',
         method = 'btree'
     }, {
@@ -824,6 +1079,7 @@ function osm2pgsql.process_node(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
+            last_update = format_date(object.timestamp),
             osm_geom = object:as_point()
         })
     end
@@ -835,6 +1091,7 @@ function osm2pgsql.process_node(object)
             type = object.tags.natural,
             ele = tonumber(object.tags.ele),
             direction = object.tags.direction,
+            last_update = format_date(object.timestamp),
             geom = object:as_point()
         })
     end
@@ -846,6 +1103,7 @@ function osm2pgsql.process_node(object)
             type = object.tags.tourism,
             ele = tonumber(object.tags.ele),
             direction = object.tags.direction,
+            last_update = format_date(object.timestamp),
             geom = object:as_point()
         })
     end
@@ -857,6 +1115,7 @@ function osm2pgsql.process_node(object)
             place = object.tags.place,
             population = tonumber(object.tags.population),
             tags = object.tags,
+            last_update = format_date(object.timestamp),
             geom = object:as_point()
         })
     end
@@ -884,6 +1143,7 @@ function osm2pgsql.process_node(object)
             communication = object.tags.communication,
             landuse = object.tags.landuse,
             tags = object.tags,
+            last_update = format_date(object.timestamp),
             osm_geom = object:as_point()
         })
     end
@@ -902,6 +1162,7 @@ function osm2pgsql.process_way(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
+            last_update = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
     end    
@@ -911,6 +1172,7 @@ function osm2pgsql.process_way(object)
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = forest_type(object),
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -919,6 +1181,7 @@ function osm2pgsql.process_way(object)
         tables.water:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -926,11 +1189,13 @@ function osm2pgsql.process_way(object)
     if object.is_closed and
         (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
             object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or 
-            object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments') then
+            object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments' or
+            object.tags.leisure == 'pitch' ) then
         tables.grass:insert({
             name = object.tags.name,
             type = grass_type(object),
             name_en = object.tags['name:en'],
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -943,6 +1208,7 @@ function osm2pgsql.process_way(object)
             name = object.tags.name,
             type = object.tags.landuse,
             name_en = object.tags['name:en'],
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end    
@@ -956,6 +1222,7 @@ function osm2pgsql.process_way(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -976,6 +1243,7 @@ function osm2pgsql.process_way(object)
             tunnel = clean_tunnel(object), -- make it a bool
             layer = clean_layer(object), -- convert it to a number
             z_order = z_order_calculation(object),
+            last_update = format_date(object.timestamp),
             geom = object:as_multilinestring()
         }
 
@@ -1004,6 +1272,7 @@ function osm2pgsql.process_way(object)
             tunnel = clean_tunnel(object),
             layer = clean_layer(object),
             intermittent = str_to_bool(object.tags.intermittent),
+            last_update = format_date(object.timestamp),
             geom = object:as_multilinestring()
         })
     end
@@ -1013,6 +1282,7 @@ function osm2pgsql.process_way(object)
             name = object.tags.name,
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
+            last_update = format_date(object.timestamp),
             geom = object:as_multilinestring()
         })
     end
@@ -1041,6 +1311,7 @@ function osm2pgsql.process_way(object)
             communication = object.tags.communication,
             landuse = object.tags.landuse,
             tags = object.tags,
+            last_update = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
     end
@@ -1068,6 +1339,7 @@ function osm2pgsql.process_way(object)
             communication = object.tags.communication,
             landuse = object.tags.landuse,
             tags = object.tags,
+            last_update = format_date(object.timestamp),
             osm_geom = object:as_multilinestring()
         })
     end
@@ -1090,6 +1362,7 @@ function osm2pgsql.process_relation(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
+            last_update = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
     end
@@ -1099,6 +1372,7 @@ function osm2pgsql.process_relation(object)
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = forest_type(object),
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -1107,6 +1381,7 @@ function osm2pgsql.process_relation(object)
         tables.water:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -1119,6 +1394,7 @@ function osm2pgsql.process_relation(object)
             name = object.tags.name,
             type = object.tags.landuse,
             name_en = object.tags['name:en'],
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end 
@@ -1131,6 +1407,7 @@ function osm2pgsql.process_relation(object)
             name = object.tags.name,
             type = grass_type(object),
             name_en = object.tags['name:en'],
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -1144,6 +1421,7 @@ function osm2pgsql.process_relation(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -1153,6 +1431,7 @@ function osm2pgsql.process_relation(object)
             name = object.tags.name,
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
+            last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
     end
@@ -1181,6 +1460,7 @@ function osm2pgsql.process_relation(object)
             communication = object.tags.communication,
             landuse = object.tags.landuse,
             tags = object.tags,
+            last_update = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
     end
@@ -1208,6 +1488,7 @@ function osm2pgsql.process_relation(object)
             communication = object.tags.communication,
             landuse = object.tags.landuse,
             tags = object.tags,
+            last_update = format_date(object.timestamp),
             osm_geom = object:as_multilinestring()
         })
     end

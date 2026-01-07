@@ -56,3 +56,7 @@ luac.out
 General 
 *.pdf
 dbeaver-workspace.properties
+*.osc.gz
+*.osc
+osm_update.state
+tmp.txt

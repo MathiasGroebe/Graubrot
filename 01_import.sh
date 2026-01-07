@@ -3,7 +3,7 @@
 # name of pg service, which should be used to access the database
 pg_service="graubrot"
 # xmin, ymin, xmax, ymax
-bbox="13.493184,50.911937,13.655232,51.000389" #Tharandt
+bbox="13.435591,50.874256,13.712653,51.045631" #Tharandt
 # raw OSM file (PBF or OSM-XML) 
 input_osm="sachsen-latest.osm.pbf"
 
