@@ -53,6 +53,10 @@ else
     echo "Importing changes into the database..."
     # Importing changes into the database
     osm2pgsql -O flex --append --slim -x -S graubrot.lua $(date +%F)_clipped.osc.gz
+
+    # Handeling of delete objects
+    psql -f 10_update_changes.sql
+    echo "Updates dones."
     
     
 fi
