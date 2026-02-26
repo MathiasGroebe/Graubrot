@@ -5,12 +5,80 @@ local tables = {}
 local import_schema = 'osm' -- Defines the import schema
 local epsg_code = 25833 -- Defines the projection
 local w2r = {}
+local file_reading_in_progress = true
 
 local function format_date(ts)
     return os.date('!%Y-%m-%dT%H:%M:%SZ', ts)
 end
 
 -- Table definitions
+
+tables.changes = osm2pgsql.define_table({
+    name = 'changes',
+    schema = import_schema,
+    ids = nil,
+    columns = {{
+        column = 'fid',
+        sql_type = 'serial',
+        create_only = true
+    }, {
+        column = 'osm_id',
+        type = 'bigint'
+    }, {
+        column = 'osm_type',
+        type = 'text'        
+    }, {
+        column = 'layer',
+        type = 'text'
+    }, {
+        column = 'version',
+        type = 'integer'
+    }, {
+        column = 'name',
+        type = 'text'
+    }, {        
+        column = 'action',
+        type = 'text'
+    }, {        
+        column = 'reviewed',
+        type = 'text'        
+    }, {
+        column = 'timestamp',
+        sql_type = 'timestamp'
+    }, {
+        column = 'object_geom',
+        type = 'geometry',
+        projection = epsg_code        
+    },{
+        column = 'geom',
+        create_only = true,
+        sql_type = "geometry(polygon, " .. epsg_code .. ") GENERATED ALWAYS AS (CASE WHEN ST_GeometryType(object_geom) = 'ST_Point' THEN ST_Envelope(ST_Buffer(object_geom, 10)) ELSE ST_Envelope(object_geom) END) STORED"
+    }},
+    indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    },
+    {
+        column = 'osm_id',
+        method = 'btree'
+    },
+    {
+        column = 'reviewed',
+        method = 'btree'
+    },    
+    {
+        column = 'object_geom',
+        method = 'gist'
+    },
+    {
+        column = 'geom',
+        method = 'gist'
+    }
+}
+})
+
+
 tables.forest = osm2pgsql.define_table({
     name = 'forest',
     schema = import_schema,
@@ -1039,6 +1107,33 @@ local function z_order_calculation(object)
     return z_order
 end
 
+local function add_object_change(object, object_layer, object_geom)
+    -- In this example only changes while updating the database are recorded.
+    -- This happens in 'append' mode.
+    if osm2pgsql.mode == 'append' and file_reading_in_progress then
+        tables.changes:insert{
+            osm_type = object.type,
+            osm_id = object.id,
+            version = object.version,
+            action = (object.version == 1) and 'A' or 'M',
+            timestamp = format_date(object.timestamp),
+            layer = object_layer,
+            object_geom = object_geom, 
+        }
+    end
+end
+
+local function add_deleted_object(object)
+    tables.changes:insert{
+        osm_type = object.type,
+        osm_id = object.id,
+        version = object.version,
+        action = 'D',
+        -- Timestamp of the import day, otherwise it would show the timestamp of the last update of the object.
+        timestamp = format_date(os.time({year=os.date('%Y'), month=os.date('%m'), day=os.date('%d')}))
+    }
+end
+
 function str_to_bool(str)
     if str == nil then
         return false
@@ -1082,6 +1177,8 @@ function osm2pgsql.process_node(object)
             last_update = format_date(object.timestamp),
             osm_geom = object:as_point()
         })
+
+        add_object_change(object, "address", object:as_point())
     end
 
     if object.tags.natural == 'peak' or object.tags.natural == 'vulcano' or object.tags.natural == 'saddle' then
@@ -1094,6 +1191,8 @@ function osm2pgsql.process_node(object)
             last_update = format_date(object.timestamp),
             geom = object:as_point()
         })
+
+        add_object_change(object, "elevation_point", object:as_point())
     end
 
     if object.tags.tourism == 'viewpoint' then
@@ -1106,6 +1205,8 @@ function osm2pgsql.process_node(object)
             last_update = format_date(object.timestamp),
             geom = object:as_point()
         })
+
+        add_object_change(object, "elevation_point", object:as_point())
     end
 
     if object.tags.place then
@@ -1118,6 +1219,8 @@ function osm2pgsql.process_node(object)
             last_update = format_date(object.timestamp),
             geom = object:as_point()
         })
+
+        add_object_change(object, "place", object:as_point())
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
@@ -1146,6 +1249,8 @@ function osm2pgsql.process_node(object)
             last_update = format_date(object.timestamp),
             osm_geom = object:as_point()
         })
+
+        add_object_change(object, "poi", object:as_point())
     end
 
 end
@@ -1165,6 +1270,8 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "address", object:as_multipolygon())
     end    
     
     if object.is_closed and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
@@ -1175,6 +1282,8 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "forest", object:as_multipolygon())
     end
 
     if object.is_closed and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
@@ -1184,6 +1293,8 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "water", object:as_multipolygon())
     end
 
     if object.is_closed and
@@ -1198,6 +1309,8 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "grass", object:as_multipolygon())
     end
 
     if object.is_closed and
@@ -1211,6 +1324,9 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "built_up_area", object:as_multipolygon())
+
     end    
 
     if object.is_closed and object.tags.building then
@@ -1225,6 +1341,8 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "building", object:as_multipolygon())
     end
 
     if object.tags.highway or object.tags.railway then
@@ -1262,6 +1380,7 @@ function osm2pgsql.process_way(object)
         end
 
         tables.traffic:insert(row)
+        add_object_change(object, "traffic", object:as_multilinestring())
     end
 
     if object.tags.waterway then
@@ -1275,6 +1394,9 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multilinestring()
         })
+
+        add_object_change(object, "traffic", object:as_multilinestring())
+                
     end
 
     if object.tags.boundary == 'administrative' then
@@ -1285,6 +1407,9 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multilinestring()
         })
+
+        add_object_change(object, "traffic", object:as_multilinestring())
+
     end
 
     if object.is_closed and
@@ -1314,6 +1439,9 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "poi", object:as_multipolygon())
+
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
@@ -1342,6 +1470,9 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             osm_geom = object:as_multilinestring()
         })
+        
+        add_object_change(object, "poi", object:as_multilinestring())
+
     end
 
 end
@@ -1365,6 +1496,8 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "address", object:as_multipolygon())
     end
 
     if type == 'multipolygon' and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
@@ -1375,6 +1508,7 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+        add_object_change(object, "forest", object:as_multipolygon())
     end
 
     if type == 'multipolygon' and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
@@ -1384,6 +1518,8 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "water", object:as_multipolygon())
     end
 
     if type == 'multipolygon' and
@@ -1397,6 +1533,8 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "built_up_area", object:as_multipolygon())
     end 
 
     if type == 'multipolygon' and
@@ -1410,6 +1548,8 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "grass", object:as_multipolygon())
     end
 
     if type == 'multipolygon' and object.tags.building then
@@ -1424,6 +1564,8 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "building", object:as_multipolygon())
     end
 
     if object.tags.boundary == 'administrative' then
@@ -1434,6 +1576,8 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
+   
+        add_object_change(object, "admin_boundary_area", object:as_multipolygon())
     end
 
     if type == 'multipolygon' and
@@ -1463,6 +1607,8 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
+
+        add_object_change(object, "poi", object:as_multipolygon())
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
@@ -1491,6 +1637,7 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             osm_geom = object:as_multilinestring()
         })
+        add_object_change(object, "poi", object:as_multilinestring())
     end
 
 
@@ -1506,4 +1653,16 @@ function osm2pgsql.process_relation(object)
     end
 
 
+end
+
+-- Track changes of delete objects
+osm2pgsql.process_deleted_node = add_deleted_object
+osm2pgsql.process_deleted_way = add_deleted_object
+osm2pgsql.process_deleted_relation = add_deleted_object
+
+function osm2pgsql.after_relations()
+  -- This callback is called after the last relation has been read from
+  -- the input file. As objects are guaranteed to come in order
+  -- node/way/relation, file reading is done at that point.
+  file_reading_in_progress = false
 end
