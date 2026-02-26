@@ -3,9 +3,10 @@
 ## --- Import with updates --- ##
 
 # name of pg service, which should be used to access the database
-pg_service="graubrot"
-bbox="13.789586,50.810938,14.096173,50.940055"
-osm_file="sachsen-251223.osm.pbf"
+pg_service="tmp"
+bbox="13.711196,51.035285,13.75321,51.059702" #DD
+osm_file="sachsen-latest.osm.pbf"
+update_path="https://download.geofabrik.de/europe/germany/sachsen-updates/"
 
 export PGSERVICE=$pg_service
 
@@ -26,7 +27,7 @@ if [ ! -f "osm_update.state" ]; then
     echo "Creating initial state file for updates..."
     # This sets a timestamp for the initial state, which can be used for future updates, with some buffer so get all changes
     one_week_ago=$(date -u -d '7 days ago' +"%Y-%m-%dT%H:%M:%SZ")
-    pyosmium-get-changes --server https://download.geofabrik.de/europe/germany-updates/ -D $one_week_ago -f osm_update.state
+    pyosmium-get-changes --server $update_path -D $one_week_ago -f osm_update.state
 
     echo "Done."
 
@@ -40,7 +41,7 @@ else
 
     echo "Downloading changes..."
     # Download changes; the osm_update.state file will be updated in the process
-    pyosmium-get-changes --size=1000 --server https://download.geofabrik.de/europe/germany-updates/ -f osm_update.state -o $(date +%F)_germany.osc.gz
+    pyosmium-get-changes --size=1000 --server $update_path -f osm_update.state -o $(date +%F)_germany.osc.gz
 
 
     echo "Clipping changes..."
