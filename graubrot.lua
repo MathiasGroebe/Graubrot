@@ -82,15 +82,21 @@ tables.changes = osm2pgsql.define_table({
 tables.forest = osm2pgsql.define_table({
     name = 'forest',
     schema = import_schema,
-    ids = {
-        type = 'area',
-        id_column = 'area_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{
         column = 'name',
         type = 'text'
     }, {
@@ -111,21 +117,37 @@ tables.forest = osm2pgsql.define_table({
         column = 'fid',
         method = 'btree',
         unique = true
+    }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'
+    },    
+    {
+        column = 'geom',
+        method = 'gist'
     }}
 })
 
 tables.water = osm2pgsql.define_table({
     name = 'water',
     schema = import_schema,
-    ids = {
-        type = 'area',
-        id_column = 'area_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'name',
         type = 'text'
     }, {
@@ -163,21 +185,33 @@ tables.water = osm2pgsql.define_table({
         column = 'fid',
         method = 'btree',
         unique = true
+    }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
     }}
 })
 
 tables.grass = osm2pgsql.define_table({
     name = 'grass',
     schema = import_schema,
-    ids = {
-        type = 'area',
-        id_column = 'area_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'name',
         type = 'text'
     }, {
@@ -198,6 +232,12 @@ tables.grass = osm2pgsql.define_table({
         column = 'fid',
         method = 'btree',
         unique = true
+    }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
     }}
 })
 
@@ -205,15 +245,21 @@ tables.grass = osm2pgsql.define_table({
 tables.built_up_area = osm2pgsql.define_table({
     name = 'built_up_area',
     schema = import_schema,
-    ids = {
-        type = 'area',
-        id_column = 'area_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'name',
         type = 'text'
     }, {
@@ -234,21 +280,33 @@ tables.built_up_area = osm2pgsql.define_table({
         column = 'fid',
         method = 'btree',
         unique = true
+    }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
     }}
 })
 
 tables.building = osm2pgsql.define_table({
     name = 'building',
     schema = import_schema,
-    ids = {
-        type = 'area',
-        id_column = 'area_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'building',
         type = 'text'
     }, {
@@ -302,6 +360,12 @@ tables.building = osm2pgsql.define_table({
         method = 'btree',
         unique = true
     }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
+    }, {
         column = 'building',
         method = 'btree'
     }, {
@@ -314,15 +378,21 @@ tables.building = osm2pgsql.define_table({
 tables.traffic = osm2pgsql.define_table({
     name = 'traffic',
     schema = import_schema,
-    ids = {
-        type = 'way',
-        id_column = 'way_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'highway',
         type = 'text'
     }, {
@@ -405,6 +475,12 @@ tables.traffic = osm2pgsql.define_table({
         column = 'fid',
         method = 'btree',
         unique = true
+    }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'     
     },{
         column = 'highway',
         method = 'btree'
@@ -441,15 +517,21 @@ tables.traffic = osm2pgsql.define_table({
 tables.waterway = osm2pgsql.define_table({
     name = 'waterway',
     schema = import_schema,
-    ids = {
-        type = 'way',
-        id_column = 'area_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'waterway',
         type = 'text'
     }, {
@@ -500,6 +582,12 @@ tables.waterway = osm2pgsql.define_table({
         method = 'btree',
         unique = true
     }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
+    }, {
         column = 'waterway',
         method = 'btree'
     }, {
@@ -523,15 +611,21 @@ tables.waterway = osm2pgsql.define_table({
 tables.admin_boundary_line = osm2pgsql.define_table({
     name = 'admin_boundary_line',
     schema = import_schema,
-    ids = {
-        type = 'way',
-        id_column = 'way_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'name',
         type = 'text'
     }, {
@@ -553,6 +647,12 @@ tables.admin_boundary_line = osm2pgsql.define_table({
         method = 'btree',
         unique = true
     }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
+    }, {
         column = 'admin_level',
         method = 'btree'
     }, {
@@ -564,15 +664,21 @@ tables.admin_boundary_line = osm2pgsql.define_table({
 tables.admin_boundary_area = osm2pgsql.define_table({
     name = 'admin_boundary_area',
     schema = import_schema,
-    ids = {
-        type = 'area',
-        id_column = 'area_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'name',
         type = 'text'
     }, {
@@ -614,6 +720,13 @@ tables.admin_boundary_area = osm2pgsql.define_table({
         method = 'btree',
         unique = true
     }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
+    }, {
+        
         column = 'admin_level',
         method = 'btree'
     }, {
@@ -625,15 +738,21 @@ tables.admin_boundary_area = osm2pgsql.define_table({
 tables.address = osm2pgsql.define_table({
     name = 'address',
     schema = import_schema,
-    ids = {
-        type = 'any',
-        id_column = 'osm_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'street',
         type = 'text'
     }, {
@@ -662,6 +781,12 @@ tables.address = osm2pgsql.define_table({
         method = 'btree',
         unique = true
     }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
+    }, {
         column = 'osm_geom',
         method = 'gist'
     }, {
@@ -674,15 +799,21 @@ tables.address = osm2pgsql.define_table({
 tables.elevation_point = osm2pgsql.define_table({
     name = 'elevation_point',
     schema = import_schema,
-    ids = {
-        type = 'node',
-        id_column = 'node_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'name',
         type = 'text'
     }, {
@@ -729,6 +860,12 @@ tables.elevation_point = osm2pgsql.define_table({
         method = 'btree',
         unique = true
     }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'         
+    }, {
         column = 'type',
         method = 'btree'
     }, {
@@ -744,15 +881,21 @@ tables.elevation_point = osm2pgsql.define_table({
 tables.place = osm2pgsql.define_table({
     name = 'place',
     schema = import_schema,
-    ids = {
-        type = 'node',
-        id_column = 'node_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'name',
         type = 'text'
     }, {
@@ -800,7 +943,13 @@ tables.place = osm2pgsql.define_table({
         column = 'fid',
         method = 'btree',
         unique = true
-    },{
+    }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'        
+    }, {
         column = 'place',
         method = 'btree'
     }, {
@@ -815,15 +964,21 @@ tables.place = osm2pgsql.define_table({
 tables.poi = osm2pgsql.define_table({
     name = 'poi',
     schema = import_schema,
-    ids = {
-        type = 'any',
-        id_column = 'osm_id'
-    },
+    ids = nil,
     columns = {{
         column = 'fid',
         sql_type = 'serial',
         create_only = true
     }, {
+        column = 'osm_id',
+        type = 'bigint'
+    },{
+        column = 'version',
+        type = 'integer'
+    },{
+        column = 'approved',
+        type = 'bool',
+    },{        
         column = 'name',
         type = 'text'
     }, {
@@ -913,6 +1068,12 @@ tables.poi = osm2pgsql.define_table({
         column = 'fid',
         method = 'btree',
         unique = true
+    }, {
+        column = 'osm_id',
+        method = 'btree'
+    }, {
+        column = 'approved',
+        method = 'btree'           
     }, {
         column = 'leisure',
         method = 'btree'
@@ -1170,6 +1331,8 @@ function osm2pgsql.process_node(object)
 
     if object.tags['addr:housenumber'] or object.tags['addr:street'] then
         tables.address:insert({
+            osm_id = object.id,
+            version = object.version,            
             street = object.tags['addr:street'],
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
@@ -1183,6 +1346,8 @@ function osm2pgsql.process_node(object)
 
     if object.tags.natural == 'peak' or object.tags.natural == 'vulcano' or object.tags.natural == 'saddle' then
         tables.elevation_point:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = object.tags.natural,
@@ -1197,6 +1362,8 @@ function osm2pgsql.process_node(object)
 
     if object.tags.tourism == 'viewpoint' then
         tables.elevation_point:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = object.tags.tourism,
@@ -1211,6 +1378,8 @@ function osm2pgsql.process_node(object)
 
     if object.tags.place then
         tables.place:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             place = object.tags.place,
@@ -1227,6 +1396,8 @@ function osm2pgsql.process_node(object)
     object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
     object.tags.communication or object.tags.landuse then
         tables.poi:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -1263,6 +1434,8 @@ function osm2pgsql.process_way(object)
 
     if object.is_closed and (object.tags['addr:housenumber'] or object.tags['addr:street']) then
         tables.address:insert({
+            osm_id = object.id,
+            version = object.version,            
             street = object.tags['addr:street'],
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
@@ -1276,6 +1449,8 @@ function osm2pgsql.process_way(object)
     
     if object.is_closed and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
         tables.forest:insert({
+            osm_id = object.id,
+            version = object.version,
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = forest_type(object),
@@ -1288,6 +1463,8 @@ function osm2pgsql.process_way(object)
 
     if object.is_closed and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
         tables.water:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             last_update = format_date(object.timestamp),
@@ -1303,6 +1480,8 @@ function osm2pgsql.process_way(object)
             object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments' or
             object.tags.leisure == 'pitch' ) then
         tables.grass:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             type = grass_type(object),
             name_en = object.tags['name:en'],
@@ -1318,6 +1497,8 @@ function osm2pgsql.process_way(object)
             object.tags.landuse == 'commercial' or object.tags.landuse == 'education' or object.tags.landuse == 'fairground' or 
             object.tags.landuse == 'industrial' or object.tags.landuse == 'residential' or object.tags.landuse == 'retail') then
         tables.built_up_area:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             type = object.tags.landuse,
             name_en = object.tags['name:en'],
@@ -1331,6 +1512,8 @@ function osm2pgsql.process_way(object)
 
     if object.is_closed and object.tags.building then
         tables.building:insert({
+            osm_id = object.id,
+            version = object.version,            
             building = object.tags.building,
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -1347,6 +1530,8 @@ function osm2pgsql.process_way(object)
 
     if object.tags.highway or object.tags.railway then
         row = {
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             ref = object.tags.ref,
@@ -1385,6 +1570,8 @@ function osm2pgsql.process_way(object)
 
     if object.tags.waterway then
         tables.waterway:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             waterway = object.tags.waterway,
@@ -1401,6 +1588,8 @@ function osm2pgsql.process_way(object)
 
     if object.tags.boundary == 'administrative' then
         tables.admin_boundary_line:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
@@ -1423,6 +1612,8 @@ function osm2pgsql.process_way(object)
         end
 
         tables.poi:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -1464,6 +1655,8 @@ function osm2pgsql.process_relation(object)
 
     if type == 'multipolygon' and (object.tags['addr:housenumber'] or object.tags['addr:street']) then
         tables.address:insert({
+            osm_id = object.id,
+            version = object.version,            
             street = object.tags['addr:street'],
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
@@ -1477,6 +1670,10 @@ function osm2pgsql.process_relation(object)
 
     if type == 'multipolygon' and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
         tables.forest:insert({
+            osm_id = object.id,
+            version = object.version,            
+            osm_id = object.id,
+            version = object.version,
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = forest_type(object),
@@ -1488,6 +1685,8 @@ function osm2pgsql.process_relation(object)
 
     if type == 'multipolygon' and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
         tables.water:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             last_update = format_date(object.timestamp),
@@ -1502,6 +1701,8 @@ function osm2pgsql.process_relation(object)
             object.tags.landuse == 'commercial' or object.tags.landuse == 'education' or object.tags.landuse == 'fairground' or 
             object.tags.landuse == 'industrial' or object.tags.landuse == 'residential' or object.tags.landuse == 'retail') then
         tables.built_up_area:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             type = object.tags.landuse,
             name_en = object.tags['name:en'],
@@ -1517,6 +1718,8 @@ function osm2pgsql.process_relation(object)
     object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or 
     object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments') then
         tables.grass:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             type = grass_type(object),
             name_en = object.tags['name:en'],
@@ -1529,6 +1732,8 @@ function osm2pgsql.process_relation(object)
 
     if type == 'multipolygon' and object.tags.building then
         tables.building:insert({
+            osm_id = object.id,
+            version = object.version,            
             building = object.tags.building,
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -1545,6 +1750,8 @@ function osm2pgsql.process_relation(object)
 
     if object.tags.boundary == 'administrative' then
         tables.admin_boundary_area:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
@@ -1566,6 +1773,8 @@ function osm2pgsql.process_relation(object)
         end
 
         tables.poi:insert({
+            osm_id = object.id,
+            version = object.version,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
