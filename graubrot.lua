@@ -1582,7 +1582,7 @@ function osm2pgsql.process_way(object)
             geom = object:as_multilinestring()
         })
 
-        add_object_change(object, "traffic", object:as_multilinestring())
+        add_object_change(object, "waterway", object:as_multilinestring())
                 
     end
 
@@ -1597,7 +1597,7 @@ function osm2pgsql.process_way(object)
             geom = object:as_multilinestring()
         })
 
-        add_object_change(object, "traffic", object:as_multilinestring())
+        add_object_change(object, "admin_boundary_line", object:as_multilinestring())
 
     end
 
