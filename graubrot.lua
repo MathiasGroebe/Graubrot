@@ -1412,10 +1412,16 @@ function osm2pgsql.process_way(object)
 
     end
 
-    if object.is_closed and
-        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+    if (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
         object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
         object.tags.communication or object.tags.landuse) then
+
+        if object.is_closed then
+            geometry = object:as_multipolygon()
+        else
+            geometry = object:as_linestring()
+        end
+
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -1437,41 +1443,10 @@ function osm2pgsql.process_way(object)
             landuse = object.tags.landuse,
             tags = object.tags,
             last_update = format_date(object.timestamp),
-            osm_geom = object:as_multipolygon()
+            osm_geom = geometry
         })
 
-        add_object_change(object, "poi", object:as_multipolygon())
-
-    end
-
-    if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
-    object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
-    object.tags.communication or object.tags.landuse then
-        tables.poi:insert({
-            name = object.tags.name,
-            name_en = object.tags['name:en'],
-            leisure = object.tags.leisure,
-            tourism = object.tags.tourism,
-            historic = object.tags.historic,
-            man_made = object.tags.man_made,
-            natural = object.tags.natural,
-            amenity = object.tags.amenity,
-            religion = object.tags.religion,
-            highway = object.tags.highway,
-            railway = object.tags.railway,
-            public_transport = object.tags.public_transport,
-            shop = object.tags.shop,
-            barrier = object.tags.barrier,
-            information = object.tags.information,
-            power = object.tags.power,
-            communication = object.tags.communication,
-            landuse = object.tags.landuse,
-            tags = object.tags,
-            last_update = format_date(object.timestamp),
-            osm_geom = object:as_multilinestring()
-        })
-        
-        add_object_change(object, "poi", object:as_multilinestring())
+        add_object_change(object, "poi", geometry)
 
     end
 
@@ -1580,10 +1555,16 @@ function osm2pgsql.process_relation(object)
         add_object_change(object, "admin_boundary_area", object:as_multipolygon())
     end
 
-    if type == 'multipolygon' and
-        (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
+    if (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
         object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
         object.tags.communication or object.tags.landuse) then
+
+        if type == 'multipolygon' then
+            geometry = object:as_multipolygon()
+        else
+            geometry = object:as_multilinestring()
+        end
+
         tables.poi:insert({
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -1605,39 +1586,10 @@ function osm2pgsql.process_relation(object)
             landuse = object.tags.landuse,
             tags = object.tags,
             last_update = format_date(object.timestamp),
-            osm_geom = object:as_multipolygon()
+            osm_geom = geometry
         })
 
-        add_object_change(object, "poi", object:as_multipolygon())
-    end
-
-    if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
-        object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
-        object.tags.communication or object.tags.landuse then 
-        tables.poi:insert({
-            name = object.tags.name,
-            name_en = object.tags['name:en'],
-            leisure = object.tags.leisure,
-            tourism = object.tags.tourism,
-            historic = object.tags.historic,
-            man_made = object.tags.man_made,
-            natural = object.tags.natural,
-            amenity = object.tags.amenity,
-            religion = object.tags.religion,
-            highway = object.tags.highway,
-            railway = object.tags.railway,
-            public_transport = object.tags.public_transport,
-            shop = object.tags.shop,
-            barrier = object.tags.barrier,
-            information = object.tags.information,
-            power = object.tags.power,
-            communication = object.tags.communication,
-            landuse = object.tags.landuse,
-            tags = object.tags,
-            last_update = format_date(object.timestamp),
-            osm_geom = object:as_multilinestring()
-        })
-        add_object_change(object, "poi", object:as_multilinestring())
+        add_object_change(object, "poi", geometry)
     end
 
 
