@@ -1271,7 +1271,7 @@ end
 local function add_object_change(object, object_layer, object_geom)
     -- In this example only changes while updating the database are recorded.
     -- This happens in 'append' mode.
-    if osm2pgsql.mode == 'append' and file_reading_in_progress then
+    if osm2pgsql.mode == 'append' then
         tables.changes:insert{
             osm_type = object.type,
             osm_id = object.id,
@@ -1746,6 +1746,7 @@ function osm2pgsql.process_relation(object)
         })
 
         add_object_change(object, "building", object:as_multipolygon())
+
     end
 
     if object.tags.boundary == 'administrative' then
@@ -1799,6 +1800,7 @@ function osm2pgsql.process_relation(object)
         })
 
         add_object_change(object, "poi", geometry)
+
     end
 
 
