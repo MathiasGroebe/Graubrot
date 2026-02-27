@@ -4,7 +4,7 @@
 
 # name of pg service, which should be used to access the database
 pg_service="tmp"
-bbox="13.711196,51.035285,13.75321,51.059702" #DD
+bbox="13.579324,50.974937,13.966063,51.177714" #DD
 osm_file="sachsen-latest.osm.pbf"
 update_path="https://download.geofabrik.de/europe/germany/sachsen-updates/"
 
@@ -41,14 +41,14 @@ else
 
     echo "Downloading changes..."
     # Download changes; the osm_update.state file will be updated in the process
-    pyosmium-get-changes --size=1000 --server $update_path -f osm_update.state -o $(date +%F)_germany.osc.gz
+    pyosmium-get-changes --size=1000 --server $update_path -f osm_update.state -o $(date +%F)_updates.osc.gz
 
 
     echo "Clipping changes..."
     # Clipping the changes to the region
-    osmium extract -b $bbox -s smart --overwrite -o $(date +%F)_clipped.osc.gz $(date +%F)_germany.osc.gz
+    osmium extract -b $bbox -s smart --overwrite -o $(date +%F)_clipped.osc.gz $(date +%F)_updates.osc.gz
     # Deleting the non-clipped data
-    rm $(date +%F)_germany.osc.gz
+    rm $(date +%F)_updates.osc.gz
 
     echo "Importing changes into the database..."
     # Importing changes into the database
@@ -56,7 +56,7 @@ else
 
     # Handeling of delete objects
     psql -f 10_update_changes.sql
-    echo "Updates dones."
+    echo "Updates done."
     
     
 fi
