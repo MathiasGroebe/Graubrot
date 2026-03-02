@@ -1,0 +1,3 @@
+# QGIS Actions for handling changes
+
+Collection of actions for QGIS, which can be added to the changes layer and help to review incomming changes form OpenStreetMap. It allows to check them, open the history on OpenStreetMap and of course to accpet or reject them in your local database. It can help you to maintain a dataset suitable for a map with adjustments made to specifc feature for better visualiation or labeling.
