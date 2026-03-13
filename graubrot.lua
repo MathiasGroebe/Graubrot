@@ -1,5 +1,13 @@
 print('osm2pgsql version: ' .. osm2pgsql.version)
 
+local function generate_uuid()
+    local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+    return string.gsub(template, "[xy]", function(c)
+        local v = (c == "x") and math.random(0, 0xf) or math.random(8, 0xb)
+        return string.format("%x", v)
+    end)
+end
+
 -- Variables
 local tables = {}
 local import_schema = 'osm' -- Defines the import schema
@@ -28,11 +36,14 @@ tables.changes = osm2pgsql.define_table({
         column = 'osm_type',
         type = 'text'        
     }, {
+        column = 'version',
+        type = 'integer'    
+    }, {
         column = 'layer',
         type = 'text'
     }, {
-        column = 'version',
-        type = 'integer'
+        column = 'change_uuid',
+        type = 'text'
     }, {
         column = 'name',
         type = 'text'
@@ -43,9 +54,12 @@ tables.changes = osm2pgsql.define_table({
         column = 'reviewed',
         type = 'text'        
     }, {
-        column = 'timestamp',
+        column = 'edit_timestamp',
         sql_type = 'timestamp'
     }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'
+    }, {        
         column = 'object_geom',
         type = 'geometry',
         projection = epsg_code        
@@ -97,6 +111,9 @@ tables.forest = osm2pgsql.define_table({
         column = 'approved',
         type = 'bool',
     },{
+        column = 'change_uuid',
+        type = 'text'
+    }, {        
         column = 'name',
         type = 'text'
     }, {
@@ -106,7 +123,7 @@ tables.forest = osm2pgsql.define_table({
         column = 'type',
         type = 'text'
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp',
     }, {
         column = 'geom',
@@ -148,6 +165,9 @@ tables.water = osm2pgsql.define_table({
         column = 'approved',
         type = 'bool',
     },{        
+        column = 'change_uuid',
+        type = 'text'
+    }, {        
         column = 'name',
         type = 'text'
     }, {
@@ -174,7 +194,7 @@ tables.water = osm2pgsql.define_table({
         type = 'real',
         create_only = true
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'
     }, {
         column = 'geom',
@@ -211,7 +231,10 @@ tables.grass = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{ 
+        column = 'change_uuid',
+        type = 'text'
+    }, {               
         column = 'name',
         type = 'text'
     }, {
@@ -221,7 +244,7 @@ tables.grass = osm2pgsql.define_table({
         column = 'type',
         type = 'text'
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp',
     }, {
         column = 'geom',
@@ -259,7 +282,10 @@ tables.built_up_area = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{       
+        column = 'change_uuid',
+        type = 'text'
+    }, {         
         column = 'name',
         type = 'text'
     }, {
@@ -269,7 +295,7 @@ tables.built_up_area = osm2pgsql.define_table({
         column = 'type',
         type = 'text'        
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp',
     }, {
         column = 'geom',
@@ -306,7 +332,10 @@ tables.building = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{    
+        column = 'change_uuid',
+        type = 'text'
+    }, {            
         column = 'building',
         type = 'text'
     }, {
@@ -348,7 +377,7 @@ tables.building = osm2pgsql.define_table({
         type = 'real',
         create_only = true
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'        
     }, {
         column = 'geom',
@@ -392,7 +421,10 @@ tables.traffic = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{     
+        column = 'change_uuid',
+        type = 'text'
+    }, {           
         column = 'highway',
         type = 'text'
     }, {
@@ -458,7 +490,7 @@ tables.traffic = osm2pgsql.define_table({
         type = 'real',
         create_only = true
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'                
     }, { 
         column = 'osmc_symbols', 
@@ -531,7 +563,10 @@ tables.waterway = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{      
+        column = 'change_uuid',
+        type = 'text'
+    }, {          
         column = 'waterway',
         type = 'text'
     }, {
@@ -570,7 +605,7 @@ tables.waterway = osm2pgsql.define_table({
         type = 'real',
         create_only = true
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'        
     }, {
         column = 'geom',
@@ -625,7 +660,10 @@ tables.admin_boundary_line = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{
+        column = 'change_uuid',
+        type = 'text'
+    }, {          
         column = 'name',
         type = 'text'
     }, {
@@ -635,7 +673,7 @@ tables.admin_boundary_line = osm2pgsql.define_table({
         column = 'admin_level',
         type = 'integer'
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp',
     }, {
         column = 'geom',
@@ -678,7 +716,10 @@ tables.admin_boundary_area = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{
+        column = 'change_uuid',
+        type = 'text'
+    }, {              
         column = 'name',
         type = 'text'
     }, {
@@ -708,7 +749,7 @@ tables.admin_boundary_area = osm2pgsql.define_table({
         type = 'real',
         create_only = true
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'        
     }, {
         column = 'geom',
@@ -752,7 +793,10 @@ tables.address = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{
+        column = 'change_uuid',
+        type = 'text'
+    }, {                
         column = 'street',
         type = 'text'
     }, {
@@ -765,7 +809,7 @@ tables.address = osm2pgsql.define_table({
         column = 'city',
         type = 'text'
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'
     }, {
         column = 'osm_geom',
@@ -813,7 +857,10 @@ tables.elevation_point = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{
+        column = 'change_uuid',
+        type = 'text'
+    }, {               
         column = 'name',
         type = 'text'
     }, {
@@ -848,7 +895,7 @@ tables.elevation_point = osm2pgsql.define_table({
         column = 'label_rotation',
         type = 'real'
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'        
     }, {
         column = 'geom',
@@ -895,7 +942,10 @@ tables.place = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{
+        column = 'change_uuid',
+        type = 'text'
+    }, {                
         column = 'name',
         type = 'text'
     }, {
@@ -929,7 +979,7 @@ tables.place = osm2pgsql.define_table({
         type = 'real',
         create_only = true
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'
     }, {
         column = 'tags',
@@ -978,7 +1028,10 @@ tables.poi = osm2pgsql.define_table({
     },{
         column = 'approved',
         type = 'bool',
-    },{        
+    },{
+        column = 'change_uuid',
+        type = 'text'
+    }, {               
         column = 'name',
         type = 'text'
     }, {
@@ -1050,7 +1103,7 @@ tables.poi = osm2pgsql.define_table({
         type = 'real',
         create_only = true
     }, {
-        column = 'last_update',
+        column = 'last_edit',
         sql_type = 'timestamp'
     }, {
         column = 'tags',
@@ -1268,7 +1321,7 @@ local function z_order_calculation(object)
     return z_order
 end
 
-local function add_object_change(object, object_layer, object_geom)
+local function add_object_change(object, object_layer, object_geom, change_uuid)
     -- In this example only changes while updating the database are recorded.
     -- This happens in 'append' mode.
     if osm2pgsql.mode == 'append' then
@@ -1277,8 +1330,10 @@ local function add_object_change(object, object_layer, object_geom)
             osm_id = object.id,
             version = object.version,
             action = (object.version == 1) and 'A' or 'M',
-            timestamp = format_date(object.timestamp),
+            edit_timestamp = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             layer = object_layer,
+            change_uuid = change_uuid,
             object_geom = object_geom, 
         }
     end
@@ -1291,7 +1346,8 @@ local function add_deleted_object(object)
         version = object.version,
         action = 'D',
         -- Timestamp of the import day, otherwise it would show the timestamp of the last update of the object.
-        timestamp = format_date(os.time({year=os.date('%Y'), month=os.date('%m'), day=os.date('%d')}))
+        edit_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
+        import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ')
     }
 end
 
@@ -1330,74 +1386,84 @@ function osm2pgsql.process_node(object)
     end
 
     if object.tags['addr:housenumber'] or object.tags['addr:street'] then
-        tables.address:insert({
+        new_uuid = generate_uuid()
+        tables.address:insert({ 
             osm_id = object.id,
-            version = object.version,            
+            version = object.version,
+            change_uuid = new_uuid,
             street = object.tags['addr:street'],
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             osm_geom = object:as_point()
         })
 
-        add_object_change(object, "address", object:as_point())
+        add_object_change(object, "address", object:as_point(), new_uuid)
     end
 
     if object.tags.natural == 'peak' or object.tags.natural == 'vulcano' or object.tags.natural == 'saddle' then
+        new_uuid = generate_uuid()
         tables.elevation_point:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version, 
+            change_uuid = new_uuid,           
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = object.tags.natural,
             ele = tonumber(object.tags.ele),
             direction = object.tags.direction,
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_point()
         })
 
-        add_object_change(object, "elevation_point", object:as_point())
+        add_object_change(object, "elevation_point", object:as_point(), new_uuid)
     end
 
     if object.tags.tourism == 'viewpoint' then
+        new_uuid = generate_uuid()
         tables.elevation_point:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version, 
+            change_uuid = new_uuid,           
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = object.tags.tourism,
             ele = tonumber(object.tags.ele),
             direction = object.tags.direction,
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_point()
         })
 
-        add_object_change(object, "elevation_point", object:as_point())
+        add_object_change(object, "elevation_point", object:as_point(), new_uuid)
     end
 
     if object.tags.place then
+        new_uuid = generate_uuid()
         tables.place:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version, 
+            change_uuid = new_uuid,           
             name = object.tags.name,
             name_en = object.tags['name:en'],
             place = object.tags.place,
             population = tonumber(object.tags.population),
             tags = object.tags,
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_point()
         })
 
-        add_object_change(object, "place", object:as_point())
+        add_object_change(object, "place", object:as_point(), new_uuid)
     end
 
     if object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
     object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
     object.tags.communication or object.tags.landuse then
+        new_uuid = generate_uuid()
         tables.poi:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -1417,11 +1483,11 @@ function osm2pgsql.process_node(object)
             communication = object.tags.communication,
             landuse = object.tags.landuse,
             tags = object.tags,
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             osm_geom = object:as_point()
         })
 
-        add_object_change(object, "poi", object:as_point())
+        add_object_change(object, "poi", object:as_point(), new_uuid)
     end
 
 end
@@ -1433,45 +1499,51 @@ function osm2pgsql.process_way(object)
     end
 
     if object.is_closed and (object.tags['addr:housenumber'] or object.tags['addr:street']) then
+        new_uuid = generate_uuid()
         tables.address:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version, 
+            change_uuid = new_uuid,           
             street = object.tags['addr:street'],
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "address", object:as_multipolygon())
+        add_object_change(object, "address", object:as_multipolygon(), new_uuid)
     end    
     
     if object.is_closed and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
+        new_uuid = generate_uuid()
         tables.forest:insert({
             osm_id = object.id,
             version = object.version,
+            change_uuid = new_uuid,
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = forest_type(object),
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "forest", object:as_multipolygon())
+        add_object_change(object, "forest", object:as_multipolygon(), new_uuid)
     end
 
     if object.is_closed and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
+        new_uuid = generate_uuid()
         tables.water:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             name = object.tags.name,
             name_en = object.tags['name:en'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "water", object:as_multipolygon())
+        add_object_change(object, "water", object:as_multipolygon(), new_uuid)
     end
 
     if object.is_closed and
@@ -1479,41 +1551,47 @@ function osm2pgsql.process_way(object)
             object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or 
             object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments' or
             object.tags.leisure == 'pitch' ) then
+        new_uuid = generate_uuid()
         tables.grass:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             name = object.tags.name,
             type = grass_type(object),
             name_en = object.tags['name:en'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "grass", object:as_multipolygon())
+        add_object_change(object, "grass", object:as_multipolygon(), new_uuid)
     end
 
     if object.is_closed and
         ( object.tags.landuse == 'institutional' or object.tags.landuse == 'garages' or object.tags.landuse == 'railway' or 
             object.tags.landuse == 'commercial' or object.tags.landuse == 'education' or object.tags.landuse == 'fairground' or 
             object.tags.landuse == 'industrial' or object.tags.landuse == 'residential' or object.tags.landuse == 'retail') then
+        new_uuid = generate_uuid()
         tables.built_up_area:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version, 
+            change_uuid = new_uuid,           
             name = object.tags.name,
             type = object.tags.landuse,
             name_en = object.tags['name:en'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "built_up_area", object:as_multipolygon())
+        add_object_change(object, "built_up_area", object:as_multipolygon(), new_uuid)
 
     end    
 
     if object.is_closed and object.tags.building then
+        new_uuid = generate_uuid()
         tables.building:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version,
+            change_uuid = new_uuid,          
             building = object.tags.building,
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -1521,17 +1599,19 @@ function osm2pgsql.process_way(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "building", object:as_multipolygon())
+        add_object_change(object, "building", object:as_multipolygon(), new_uuid)
     end
 
     if object.tags.highway or object.tags.railway then
+        new_uuid = generate_uuid()
         row = {
             osm_id = object.id,
-            version = object.version,            
+            version = object.version, 
+            change_uuid = new_uuid,           
             name = object.tags.name,
             name_en = object.tags['name:en'],
             ref = object.tags.ref,
@@ -1546,7 +1626,7 @@ function osm2pgsql.process_way(object)
             tunnel = clean_tunnel(object), -- make it a bool
             layer = clean_layer(object), -- convert it to a number
             z_order = z_order_calculation(object),
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multilinestring()
         }
 
@@ -1565,45 +1645,51 @@ function osm2pgsql.process_way(object)
         end
 
         tables.traffic:insert(row)
-        add_object_change(object, "traffic", object:as_multilinestring())
+        add_object_change(object, "traffic", object:as_multilinestring(), new_uuid)
     end
 
     if object.tags.waterway then
+        new_uuid = generate_uuid()
         tables.waterway:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version,
+            change_uuid = new_uuid,          
             name = object.tags.name,
             name_en = object.tags['name:en'],
             waterway = object.tags.waterway,
             tunnel = clean_tunnel(object),
             layer = clean_layer(object),
             intermittent = str_to_bool(object.tags.intermittent),
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multilinestring()
         })
 
-        add_object_change(object, "waterway", object:as_multilinestring())
+        add_object_change(object, "waterway", object:as_multilinestring(), new_uuid)
                 
     end
 
     if object.tags.boundary == 'administrative' then
+        new_uuid = generate_uuid()
         tables.admin_boundary_line:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             name = object.tags.name,
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multilinestring()
         })
 
-        add_object_change(object, "admin_boundary_line", object:as_multilinestring())
+        add_object_change(object, "admin_boundary_line", object:as_multilinestring(), new_uuid)
 
     end
 
     if (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
         object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
         object.tags.communication or object.tags.landuse) then
+
+        new_uuid = generate_uuid()
 
         if object.is_closed then
             geometry = object:as_multipolygon()
@@ -1614,6 +1700,7 @@ function osm2pgsql.process_way(object)
         tables.poi:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -1633,11 +1720,11 @@ function osm2pgsql.process_way(object)
             communication = object.tags.communication,
             landuse = object.tags.landuse,
             tags = object.tags,
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             osm_geom = geometry
         })
 
-        add_object_change(object, "poi", geometry)
+        add_object_change(object, "poi", geometry, new_uuid)
 
     end
 
@@ -1654,86 +1741,98 @@ function osm2pgsql.process_relation(object)
     -- Store multipolygon relations as polygons
 
     if type == 'multipolygon' and (object.tags['addr:housenumber'] or object.tags['addr:street']) then
+        new_uuid = generate_uuid()
         tables.address:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version,  
+            change_uuid = new_uuid,          
             street = object.tags['addr:street'],
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             osm_geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "address", object:as_multipolygon())
+        add_object_change(object, "address", object:as_multipolygon(), new_uuid)
     end
 
     if type == 'multipolygon' and (object.tags.landuse == 'forest' or object.tags.natural == 'wood') then
+        new_uuid = generate_uuid()
         tables.forest:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             osm_id = object.id,
             version = object.version,
             name = object.tags.name,
             name_en = object.tags['name:en'],
             type = forest_type(object),
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
-        add_object_change(object, "forest", object:as_multipolygon())
+        add_object_change(object, "forest", object:as_multipolygon(), new_uuid)
     end
 
     if type == 'multipolygon' and (object.tags.natural == 'water' or object.tags.waterway == 'riverbank') then
+        new_uuid = generate_uuid()
         tables.water:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             name = object.tags.name,
             name_en = object.tags['name:en'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "water", object:as_multipolygon())
+        add_object_change(object, "water", object:as_multipolygon(), new_uuid)
     end
 
     if type == 'multipolygon' and
         ( object.tags.landuse == 'institutional' or object.tags.landuse == 'garages' or object.tags.landuse == 'railway' or 
             object.tags.landuse == 'commercial' or object.tags.landuse == 'education' or object.tags.landuse == 'fairground' or 
             object.tags.landuse == 'industrial' or object.tags.landuse == 'residential' or object.tags.landuse == 'retail') then
+        new_uuid = generate_uuid()
         tables.built_up_area:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             name = object.tags.name,
             type = object.tags.landuse,
             name_en = object.tags['name:en'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "built_up_area", object:as_multipolygon())
+        add_object_change(object, "built_up_area", object:as_multipolygon(), new_uuid)
     end 
 
     if type == 'multipolygon' and
     (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
     object.tags.landuse == 'meadow' or object.tags.landuse == 'grass' or object.tags.leisure == 'park' or 
     object.tags.landuse == 'recreation_ground' or object.tags.landuse == 'cemetery' or object.tags.landuse == 'allotments') then
+        new_uuid = generate_uuid()
         tables.grass:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version, 
+            change_uuid = new_uuid,           
             name = object.tags.name,
             type = grass_type(object),
             name_en = object.tags['name:en'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "grass", object:as_multipolygon())
+        add_object_change(object, "grass", object:as_multipolygon(), new_uuid)
     end
 
     if type == 'multipolygon' and object.tags.building then
+        new_uuid = generate_uuid()
         tables.building:insert({
             osm_id = object.id,
             version = object.version,            
+            change_uuid = new_uuid,
             building = object.tags.building,
             name = object.tags.name,
             name_en = object.tags['name:en'],
@@ -1741,32 +1840,34 @@ function osm2pgsql.process_relation(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
 
-        add_object_change(object, "building", object:as_multipolygon())
+        add_object_change(object, "building", object:as_multipolygon(), new_uuid)
 
     end
 
     if object.tags.boundary == 'administrative' then
+        new_uuid = generate_uuid()
         tables.admin_boundary_area:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version,
+            change_uuid = new_uuid,          
             name = object.tags.name,
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
    
-        add_object_change(object, "admin_boundary_area", object:as_multipolygon())
+        add_object_change(object, "admin_boundary_area", object:as_multipolygon(), new_uuid)
     end
 
     if (object.tags.amenity or object.tags.leisure or object.tags.tourism or object.tags.man_made or object.tags.historic or
         object.tags.natural or object.tags.shop or object.tags.barrier or object.tags.public_transport or object.tags.power or 
         object.tags.communication or object.tags.landuse) then
-
+        new_uuid = generate_uuid()
         if type == 'multipolygon' then
             geometry = object:as_multipolygon()
         else
@@ -1775,7 +1876,8 @@ function osm2pgsql.process_relation(object)
 
         tables.poi:insert({
             osm_id = object.id,
-            version = object.version,            
+            version = object.version,
+            change_uuid = new_uuid,            
             name = object.tags.name,
             name_en = object.tags['name:en'],
             leisure = object.tags.leisure,
@@ -1795,11 +1897,11 @@ function osm2pgsql.process_relation(object)
             communication = object.tags.communication,
             landuse = object.tags.landuse,
             tags = object.tags,
-            last_update = format_date(object.timestamp),
+            last_edit = format_date(object.timestamp),
             osm_geom = geometry
         })
 
-        add_object_change(object, "poi", geometry)
+        add_object_change(object, "poi", geometry, new_uuid)
 
     end
 
