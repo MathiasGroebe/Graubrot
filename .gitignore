@@ -60,3 +60,5 @@ dbeaver-workspace.properties
 *.osc
 osm_update.state
 tmp.txt
+.vscode/settings.json
+qgis_actions/tmp.py

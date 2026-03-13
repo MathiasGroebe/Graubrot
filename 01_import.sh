@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # name of pg service, which should be used to access the database
-pg_service="graubrot"
+pg_service="tmp"
 # xmin, ymin, xmax, ymax
-bbox="13.435591,50.874256,13.712653,51.045631" #Tharandt
+bbox="13.711196,51.035285,13.75321,51.059702" #Tharandt
 # raw OSM file (PBF or OSM-XML) 
 input_osm="sachsen-latest.osm.pbf"
 
