@@ -126,6 +126,9 @@ tables.forest = osm2pgsql.define_table({
         column = 'last_edit',
         sql_type = 'timestamp',
     }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'        
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
@@ -197,6 +200,9 @@ tables.water = osm2pgsql.define_table({
         column = 'last_edit',
         sql_type = 'timestamp'
     }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'        
+    }, {
         column = 'geom',
         type = 'multipolygon',
         projection = epsg_code
@@ -246,6 +252,9 @@ tables.grass = osm2pgsql.define_table({
     }, {
         column = 'last_edit',
         sql_type = 'timestamp',
+    }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'        
     }, {
         column = 'geom',
         type = 'multipolygon',
@@ -297,6 +306,9 @@ tables.built_up_area = osm2pgsql.define_table({
     }, {
         column = 'last_edit',
         sql_type = 'timestamp',
+    }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'        
     }, {
         column = 'geom',
         type = 'multipolygon',
@@ -378,6 +390,9 @@ tables.building = osm2pgsql.define_table({
         create_only = true
     }, {
         column = 'last_edit',
+        sql_type = 'timestamp'        
+    }, {
+        column = 'import_timestamp',
         sql_type = 'timestamp'        
     }, {
         column = 'geom',
@@ -491,7 +506,10 @@ tables.traffic = osm2pgsql.define_table({
         create_only = true
     }, {
         column = 'last_edit',
-        sql_type = 'timestamp'                
+        sql_type = 'timestamp' 
+    }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'                       
     }, { 
         column = 'osmc_symbols', 
         type = 'jsonb' 
@@ -608,6 +626,9 @@ tables.waterway = osm2pgsql.define_table({
         column = 'last_edit',
         sql_type = 'timestamp'        
     }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'                       
+    }, {
         column = 'geom',
         type = 'linestring',
         projection = epsg_code
@@ -675,6 +696,9 @@ tables.admin_boundary_line = osm2pgsql.define_table({
     }, {
         column = 'last_edit',
         sql_type = 'timestamp',
+    }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'                       
     }, {
         column = 'geom',
         type = 'multilinestring',
@@ -750,7 +774,10 @@ tables.admin_boundary_area = osm2pgsql.define_table({
         create_only = true
     }, {
         column = 'last_edit',
-        sql_type = 'timestamp'        
+        sql_type = 'timestamp'    
+    }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'            
     }, {
         column = 'geom',
         type = 'multipolygon',
@@ -767,7 +794,6 @@ tables.admin_boundary_area = osm2pgsql.define_table({
         column = 'approved',
         method = 'btree'         
     }, {
-        
         column = 'admin_level',
         method = 'btree'
     }, {
@@ -811,6 +837,9 @@ tables.address = osm2pgsql.define_table({
     }, {
         column = 'last_edit',
         sql_type = 'timestamp'
+    }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'        
     }, {
         column = 'osm_geom',
         type = 'geometry',
@@ -896,7 +925,10 @@ tables.elevation_point = osm2pgsql.define_table({
         type = 'real'
     }, {
         column = 'last_edit',
-        sql_type = 'timestamp'        
+        sql_type = 'timestamp' 
+    }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'               
     }, {
         column = 'geom',
         type = 'point',
@@ -918,7 +950,6 @@ tables.elevation_point = osm2pgsql.define_table({
     }, {
         column = 'ele',
         method = 'btree'
-
     }, {
         column = 'geom',
         method = 'spgist'
@@ -981,6 +1012,9 @@ tables.place = osm2pgsql.define_table({
     }, {
         column = 'last_edit',
         sql_type = 'timestamp'
+    }, {
+        column = 'import_timestamp',
+        sql_type = 'timestamp'        
     }, {
         column = 'tags',
         type = 'jsonb'
@@ -1104,6 +1138,9 @@ tables.poi = osm2pgsql.define_table({
         create_only = true
     }, {
         column = 'last_edit',
+        sql_type = 'timestamp'
+    }, {
+        column = 'import_timestamp',
         sql_type = 'timestamp'
     }, {
         column = 'tags',
@@ -1396,6 +1433,7 @@ function osm2pgsql.process_node(object)
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             osm_geom = object:as_point()
         })
 
@@ -1414,6 +1452,7 @@ function osm2pgsql.process_node(object)
             ele = tonumber(object.tags.ele),
             direction = object.tags.direction,
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_point()
         })
 
@@ -1432,6 +1471,7 @@ function osm2pgsql.process_node(object)
             ele = tonumber(object.tags.ele),
             direction = object.tags.direction,
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_point()
         })
 
@@ -1450,6 +1490,7 @@ function osm2pgsql.process_node(object)
             population = tonumber(object.tags.population),
             tags = object.tags,
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_point()
         })
 
@@ -1484,6 +1525,7 @@ function osm2pgsql.process_node(object)
             landuse = object.tags.landuse,
             tags = object.tags,
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             osm_geom = object:as_point()
         })
 
@@ -1509,6 +1551,7 @@ function osm2pgsql.process_way(object)
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             osm_geom = object:as_multipolygon()
         })
 
@@ -1525,6 +1568,7 @@ function osm2pgsql.process_way(object)
             name_en = object.tags['name:en'],
             type = forest_type(object),
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1540,6 +1584,7 @@ function osm2pgsql.process_way(object)
             name = object.tags.name,
             name_en = object.tags['name:en'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1560,6 +1605,7 @@ function osm2pgsql.process_way(object)
             type = grass_type(object),
             name_en = object.tags['name:en'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1579,6 +1625,7 @@ function osm2pgsql.process_way(object)
             type = object.tags.landuse,
             name_en = object.tags['name:en'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1600,6 +1647,7 @@ function osm2pgsql.process_way(object)
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1627,6 +1675,7 @@ function osm2pgsql.process_way(object)
             layer = clean_layer(object), -- convert it to a number
             z_order = z_order_calculation(object),
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multilinestring()
         }
 
@@ -1661,6 +1710,7 @@ function osm2pgsql.process_way(object)
             layer = clean_layer(object),
             intermittent = str_to_bool(object.tags.intermittent),
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multilinestring()
         })
 
@@ -1678,6 +1728,7 @@ function osm2pgsql.process_way(object)
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multilinestring()
         })
 
@@ -1721,6 +1772,7 @@ function osm2pgsql.process_way(object)
             landuse = object.tags.landuse,
             tags = object.tags,
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             osm_geom = geometry
         })
 
@@ -1751,6 +1803,7 @@ function osm2pgsql.process_relation(object)
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             osm_geom = object:as_multipolygon()
         })
 
@@ -1769,6 +1822,7 @@ function osm2pgsql.process_relation(object)
             name_en = object.tags['name:en'],
             type = forest_type(object),
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
         add_object_change(object, "forest", object:as_multipolygon(), new_uuid)
@@ -1783,6 +1837,7 @@ function osm2pgsql.process_relation(object)
             name = object.tags.name,
             name_en = object.tags['name:en'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1802,6 +1857,7 @@ function osm2pgsql.process_relation(object)
             type = object.tags.landuse,
             name_en = object.tags['name:en'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1821,6 +1877,7 @@ function osm2pgsql.process_relation(object)
             type = grass_type(object),
             name_en = object.tags['name:en'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1841,6 +1898,7 @@ function osm2pgsql.process_relation(object)
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
 
@@ -1858,6 +1916,7 @@ function osm2pgsql.process_relation(object)
             name_en = object.tags['name:en'],
             admin_level = tonumber(object.tags.admin_level),
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             geom = object:as_multipolygon()
         })
    
@@ -1898,6 +1957,7 @@ function osm2pgsql.process_relation(object)
             landuse = object.tags.landuse,
             tags = object.tags,
             last_edit = format_date(object.timestamp),
+            import_timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ'),
             osm_geom = geometry
         })
 
