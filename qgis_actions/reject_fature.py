@@ -11,7 +11,7 @@ if change_type == "A": # New object
     
     # Find the corresponding feature in the OSM layer using the osm_id and version attributes
     osm_layer = project.mapLayersByName(feature["layer"])[0]
-    feature_request = QgsFeatureRequest().setFilterExpression(f'"osm_id" = {feature["osm_id"]} AND "version" = {feature["version"]}')
+    feature_request = QgsFeatureRequest().setFilterExpression(f'"change_uuid" = \'{feature["change_uuid"]}\' ')
     osm_features = osm_layer.getFeatures(feature_request)
 
     for f in osm_features:
@@ -33,7 +33,7 @@ elif change_type == "M": # Modified object: set new object in his layer as revie
     
     # Find the corresponding feature in the OSM layer using the osm_id and version attributes
     osm_layer = project.mapLayersByName(feature["layer"])[0]
-    feature_request = QgsFeatureRequest().setFilterExpression(f'"osm_id" = {feature["osm_id"]} AND "version" = {feature["version"]}')
+    feature_request = QgsFeatureRequest().setFilterExpression(f'"change_uuid" = \'{feature["change_uuid"]}\' ')
     osm_features = osm_layer.getFeatures(feature_request)
 
     for f in osm_features:
