@@ -31,42 +31,42 @@ UPDATE osm.waterway SET approved = true;
 
 -- Create view for all objects to handle delete objects
 -- DROP VIEW osm.all_objects;
-CREATE VIEW osm.all_objects AS 
-SELECT osm_id, 'adress' AS layer, "version", approved, geom   
+CREATE VIEW osm.all_objects AS
+SELECT osm_id, 'adress' AS layer, fid AS o_fid, "version", change_uuid, approved, geom   
 FROM osm.address 
 UNION ALL 
-SELECT osm_id, 'admin_boundary_area' AS layer, "version", approved, geom   
+SELECT osm_id, 'admin_boundary_area' AS layer, fid AS o_fid, "version", change_uuid, approved, geom  
 FROM osm.admin_boundary_area 
 UNION ALL 
-SELECT osm_id, 'admin_boundary_line' AS layer, "version", approved, geom   
+SELECT osm_id, 'admin_boundary_line' AS layer, fid AS o_fid, "version", change_uuid, approved, geom
 FROM osm.admin_boundary_line 
 UNION ALL 
-SELECT osm_id, 'building' AS layer, "version", approved, geom   
+SELECT osm_id, 'building' AS layer, "version", fid AS o_fid, change_uuid, approved, geom
 FROM osm.building 
 UNION ALL 
-SELECT osm_id, 'built_up_area' AS layer, "version", approved, geom   
+SELECT osm_id, 'built_up_area' AS layer, fid AS o_fid, "version", change_uuid, approved, geom
 FROM osm.built_up_area 
 UNION ALL 
-SELECT osm_id, 'elevation_point' AS layer, "version", approved, geom   
+SELECT osm_id, 'elevation_point' AS layer, fid AS o_fid, "version", change_uuid, approved, geom
 FROM osm.elevation_point
 UNION ALL 
-SELECT osm_id, 'forest' AS layer, "version", approved, geom   
+SELECT osm_id, 'forest' AS layer, "version", fid AS o_fid, change_uuid, approved, geom
 FROM osm.forest 
 UNION ALL 
-SELECT osm_id, 'grass' AS layer, "version", approved, geom   
+SELECT osm_id, 'grass' AS layer, "version", fid AS o_fid, change_uuid, approved, geom
 FROM osm.grass 
 UNION ALL 
-SELECT osm_id, 'place' AS layer, "version", approved, geom   
+SELECT osm_id, 'place' AS layer, "version", fid AS o_fid, change_uuid, approved, geom
 FROM osm.place 
 UNION ALL 
-SELECT osm_id, 'poi' AS layer, "version", approved, geom   
+SELECT osm_id, 'poi' ASlayer, "version", fid AS o_fid, change_uuid, approved, geom 
 FROM osm.poi 
 UNION ALL 
-SELECT osm_id, 'traffic' AS layer, "version", approved, geom  
+SELECT osm_id, 'traffic' AS layer, "version", fid AS o_fid, change_uuid, approved, geom
 FROM osm.traffic 
 UNION ALL 
-SELECT osm_id, 'water' AS layer, "version", approved, geom   
+SELECT osm_id, 'water' AS layer, "version", fid AS o_fid, change_uuid, approved, geom
 FROM osm.water 
 UNION ALL 
-SELECT osm_id, 'waterway' AS layer, "version", approved, geom   
+SELECT osm_id, 'waterway' ASlayer, "version", fid AS o_fid, change_uuid, approved, geom
 FROM osm.waterway;
