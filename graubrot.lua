@@ -1321,8 +1321,6 @@ function osm2pgsql.process_way(object)
             osm_geom = geometry
         })
         
-        add_object_change(object, "poi", object:as_multilinestring())
-
     end
 
 end
@@ -1450,7 +1448,7 @@ function osm2pgsql.process_relation(object)
             last_update = format_date(object.timestamp),
             osm_geom = geometry
         })
-        add_object_change(object, "poi", object:as_multilinestring())
+        
     end
 
 
