@@ -42,7 +42,7 @@ elif change_type == "M": # Modified object: set new object in his layer as appro
         
         # Mark the older version of the feature as not approved
         # Older version is identified by the same osm_id but an older import_timestamp than the current change
-        feature_old_request = QgsFeatureRequest().setFilterExpression(f'"osm_id" = {feature["osm_id"]} AND "import_timestamp" < \'{feature["import_timestamp"]}\'')
+        feature_old_request = QgsFeatureRequest().setFilterExpression(f'"osm_id" = {feature["osm_id"]} AND "import_timestamp" < \'{feature["import_timestamp"]}\' AND "change_uuid" != \'{feature["change_uuid"]}\'')
         old_features = osm_layer.getFeatures(feature_old_request)
         for old_f in old_features:
             old_f["approved"] = False
