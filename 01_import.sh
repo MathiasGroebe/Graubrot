@@ -11,5 +11,12 @@ export PGSERVICE=$pg_service
 
 echo "Clip to bounding box..."
 osmium extract -b $bbox -s smart --overwrite -o region.osm.pbf $input_osm
+
 echo "Import into database..."
 osm2pgsql -O flex -S graubrot.lua region.osm.pbf 
+
+echo "Creating primary keys..."
+psql -f 10_create_pk.sql
+
+echo  "Calculating isolation..."
+psql -f 10_isolation.sql

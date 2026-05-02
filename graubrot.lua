@@ -628,8 +628,12 @@ tables.elevation_point = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'ele',
-        type = 'real'
-    }, {
+        type = 'real'        
+    },{ 
+        column = 'discrete_isolation', 
+        type = 'real', 
+        create_only = true 
+    },{
         column = 'label_visible',
         type = 'bool',
         create_only = true          
