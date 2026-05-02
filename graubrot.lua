@@ -699,9 +699,12 @@ tables.place = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'population',
-        type = 'integer',
-        create_only = true
+        type = 'integer'
     }, {
+        column = 'discrete_isolation', 
+        type = 'real', 
+        create_only = true 
+    },{        
         column = 'label_visible',
         type = 'bool',
         create_only = true
