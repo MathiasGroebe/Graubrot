@@ -1,6 +1,21 @@
 
 ## Layers and attributes 
 
+### General attributes
+
+For labeling and updates purposes all layers have the following attributes:
+
+| Attribute | Type  | Describtion |
+| :---      | :---  | :---        |
+| last_update | timestamp | Last modification of the Objects it self |
+| label_visible | bool | Show label or not |
+| label_text | text | Custom label text |
+| label_x | real | Defined label postion |
+| label_y | real | Defined label postion |
+| label_rotation | real | Defined label roation |
+
+You can use the attributes for custom labeling, they will be not filled with data from OpenStreetMap. Can be used in combination with data-defindes overrides in QGIS.
+
 ### Forest
 
 Forest layer with name of the objects, by combining the two common classifications.
@@ -209,6 +224,7 @@ graph TD;
 | type | text | B-Tree | Content of the ```natural``` tag or the ```tourism``` tag | 
 | direction | text | | Content of the ```direction``` tag | 
 | ele | real | B-Tree | Content of the ```ele``` tag converted to a number | 
+| discrete_isolation | real | |Distance to the next higher peak/vulcano in meter |
 | geom | Point geometry | SP-GiST | Multipolygon geometry of the OSM object |
 
 
@@ -292,3 +308,23 @@ graph TD;
 | tags | JSONB | | All tags of the OSM object |
 | osm_geom | Geometry collection | GiST | Geometry of the OSM object |
 | geom | Point geometry | SP-GiST | Point geometry of the OSM object generatet via ST_PointOnSurface on demand |
+
+### Place
+
+Settlements and their populatio
+
+```mermaid
+graph TD;
+    a[place=*]-->place;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| node_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| name | text | | Name of the object |
+| name_en | text | | Englisch name of the object | 
+| place | text | B-Tree | Content of the ```place``` tag | 
+| population | real | B-Tree | Content of the ```population``` tag converted to a number | 
+| discrete_isolation | real | |Distance to the next place with a higher population number in meter |
+| geom | Point geometry | SP-GiST | Multipolygon geometry of the OSM object |

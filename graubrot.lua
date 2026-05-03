@@ -32,6 +32,26 @@ tables.forest = osm2pgsql.define_table({
         column = 'type',
         type = 'text'
     }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true          
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true    
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true      
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true   
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
         column = 'last_update',
         sql_type = 'timestamp',
     }, {
@@ -62,8 +82,8 @@ tables.water = osm2pgsql.define_table({
         type = 'text'
     }, {
         column = 'name_en',
-        type = 'text'    },
-    {
+        type = 'text'    
+    }, {
         column = 'label_visible',
         type = 'bool',
         create_only = true          
@@ -119,6 +139,26 @@ tables.grass = osm2pgsql.define_table({
         column = 'type',
         type = 'text'
     }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true          
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true    
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true      
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true   
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
         column = 'last_update',
         sql_type = 'timestamp',
     }, {
@@ -154,6 +194,26 @@ tables.built_up_area = osm2pgsql.define_table({
     }, {
         column = 'type',
         type = 'text'        
+    },    {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true          
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true    
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true      
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true   
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
     }, {
         column = 'last_update',
         sql_type = 'timestamp',
@@ -473,6 +533,26 @@ tables.admin_boundary_line = osm2pgsql.define_table({
         column = 'admin_level',
         type = 'integer'
     }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true          
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true    
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true      
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true   
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true       
+    }, {
         column = 'last_update',
         sql_type = 'timestamp',
     }, {
@@ -577,6 +657,26 @@ tables.address = osm2pgsql.define_table({
     }, {
         column = 'city',
         type = 'text'
+    }, {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true          
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true    
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true      
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true   
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
     }, {
         column = 'last_update',
         sql_type = 'timestamp'
