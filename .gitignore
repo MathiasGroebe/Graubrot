@@ -60,3 +60,7 @@ dbeaver-workspace.properties
 *.osc
 osm_update.state
 tmp.txt
+
+
+water-polygons-split-4326/
+land-polygons-split-4326/
