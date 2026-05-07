@@ -311,7 +311,7 @@ graph TD;
 
 ### Place
 
-Settlements and their populatio
+Settlements and their population
 
 ```mermaid
 graph TD;
@@ -327,4 +327,24 @@ graph TD;
 | place | text | B-Tree | Content of the ```place``` tag | 
 | population | real | B-Tree | Content of the ```population``` tag converted to a number | 
 | discrete_isolation | real | |Distance to the next place with a higher population number in meter |
-| geom | Point geometry | SP-GiST | Multipolygon geometry of the OSM object |
+| geom | Point geometry | SP-GiST | Point geometry of the OSM object |
+
+
+### Land
+
+Land polygon generated from OpenStreetMap data. For faster loading split into tiles.
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| fid | int | | Feature id |
+| geom | Multiplygon geometry | GiST | Multipolygon geometry of the OSM object |
+
+
+### Ocean
+
+Water polygon showing the oceans generated from OpenStreetMap data. For faster loading split into tiles.
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| fid | int | | Feature id |
+| geom | Multiplygon geometry | GiST | Multipolygon geometry of the OSM object |
