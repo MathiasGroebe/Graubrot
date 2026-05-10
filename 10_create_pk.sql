@@ -13,3 +13,4 @@ ALTER TABLE osm.poi ADD PRIMARY KEY (fid);
 ALTER TABLE osm.traffic ADD PRIMARY KEY (fid);
 ALTER TABLE osm.water ADD PRIMARY KEY (fid);
 ALTER TABLE osm.waterway ADD PRIMARY KEY (fid);
+ALTER TABLE osm.landcover ADD PRIMARY KEY (fid);
