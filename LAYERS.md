@@ -107,7 +107,7 @@ graph TD;
 
 ### Building
 
-Buildings layer with name, and adress of the objects.
+Buildings layer with name, and adress of the objects. It also contains information about the building height, but do not consider the building-parts yet.
 
 ```mermaid
 graph TD;
@@ -126,6 +126,11 @@ graph TD;
 | housenumber | text | | Content of the ```addr:housenumber``` tag | 
 | postcode | text | | Content of the ```addr:postcode``` tag | 
 | city | text | | Content of the ```addr:city``` tag | 
+| height | text | | Content of the ```height``` tag | 
+| min_height | text | | Content of the ```min_height``` tag | 
+| levels | text | | Content of the ```building:levels``` tag | 
+| min_level | text | | Content of the ```building:min_level``` tag | 
+| height_calc | text | | Combination of height, height derived for the levels or a generic height | 
 | geom | Multipolygon geometry | GiST | Multipolygon geometry of the OSM object |
 
 ### Traffic

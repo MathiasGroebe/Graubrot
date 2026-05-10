@@ -262,6 +262,21 @@ tables.building = osm2pgsql.define_table({
         column = 'city',
         type = 'text'
     }, {
+        column = 'height',
+        type = 'real'
+    }, {
+        column = 'min_height',
+        type = 'real'
+    }, {
+        column = 'levels',
+        type = 'real'
+    }, {
+        column = 'min_level',
+        type = 'real'
+    }, {
+        column = 'height_calc',
+        type = 'real'        
+    }, {
         column = 'label_visible',
         type = 'bool',
         create_only = true         
@@ -1109,6 +1124,20 @@ local function forest_type(object)
     
 end
 
+
+local function calc_height(object)
+
+    if tonumber(object.tags.height) then 
+        return tonumber(object.tags.height)
+    end
+
+    if tonumber(object.tags['building:levels']) then
+        return (tonumber(object.tags['building:levels']) * 3.0)
+    else return 3.0 
+    end 
+    
+end
+
 local function z_order_calculation(object)
     -- Calculate z_order 
     -- layer *10; bridge +10, tunnel -10
@@ -1329,6 +1358,11 @@ function osm2pgsql.process_way(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
+            height = tonumber(object.tags.height),
+            min_height = tonumber(object.tags.min_height),
+            levels = tonumber(object.tags['building:levels']),
+            min_level = tonumber(object.tags['building:min_level']),
+            height_calc = calc_height(object),
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
@@ -1507,6 +1541,11 @@ function osm2pgsql.process_relation(object)
             housenumber = object.tags['addr:housenumber'],
             postcode = object.tags['addr:postcode'],
             city = object.tags['addr:city'],
+            height = tonumber(object.tags.height),
+            min_height = tonumber(object.tags.min_height),
+            levels = tonumber(object.tags['building:levels']),
+            min_level = tonumber(object.tags['building:min_level']), 
+            height_calc = calc_height(object),           
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
