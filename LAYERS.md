@@ -79,6 +79,34 @@ graph TD;
 | type | text | | Value of the key `natural`/`landuse`/`leisure` |
 | geom | Multipolygon geometry | GiST| Multipolygon geometry of the OSM object |
 
+
+### Landcover
+
+Area layer containing varius tags, which could be helpfull for a fine granular landcover/landuse visualization. Will be refined in future.
+
+```mermaid
+graph TD;
+    a[natural=*]-->landcover;
+    c[landuse=*]-->landcover;
+    d[amenity=*]-->landcover;
+    de[leisure=*]-->landcover;
+    e[aeroway=*]-->landcover;
+```
+
+| Attribute | Type | Index | Describtion |
+| :---      | :--- | :---  | :---        |
+| area_id | int | | Id of OSM object, needed for running updates |
+| fid | int | | Feature id |
+| name | text | | Name of the object |
+| name_en | text | | Englisch name of the object |
+| type | text | | Currently empty|
+| natural | text | | Content of the ```natural``` tag | 
+| landuse | text | | Content of the ```landuse``` tag | 
+| amenity | text | | Content of the ```amenity``` tag | 
+| leisure | text | | Content of the ```leisure``` tag | 
+| aeroway | text | | Content of the ```aeroway``` tag | 
+| geom | Multipolygon geometry | GiST| Multipolygon geometry of the OSM object |
+
 ### Built up area
 
 Areas with buildings or similar landuse.

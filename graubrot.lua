@@ -173,7 +173,6 @@ tables.grass = osm2pgsql.define_table({
     }}
 })
 
--- Table defenitions
 tables.built_up_area = osm2pgsql.define_table({
     name = 'built_up_area',
     schema = import_schema,
@@ -195,6 +194,79 @@ tables.built_up_area = osm2pgsql.define_table({
         column = 'type',
         type = 'text'        
     },    {
+        column = 'label_visible',
+        type = 'bool',
+        create_only = true          
+    }, {
+        column = 'label_text',
+        type = 'text',
+        create_only = true    
+    }, {
+        column = 'label_x',
+        type = 'real',
+        create_only = true      
+    }, {
+        column = 'label_y',
+        type = 'real',
+        create_only = true   
+    }, {
+        column = 'label_rotation',
+        type = 'real',
+        create_only = true
+    }, {
+        column = 'last_update',
+        sql_type = 'timestamp',
+    }, {
+        column = 'geom',
+        type = 'multipolygon',
+        projection = epsg_code
+    }},
+    indexes = {{
+        column = 'fid',
+        method = 'btree',
+        unique = true
+    }}
+})
+
+tables.landcover = osm2pgsql.define_table({
+    name = 'landcover',
+    schema = import_schema,
+    ids = {
+        type = 'area',
+        id_column = 'area_id'
+    },
+    columns = {{
+        column = 'fid',
+        sql_type = 'serial',
+        create_only = true
+    }, {
+        column = 'name',
+        type = 'text'
+    }, {
+        column = 'name_en',
+        type = 'text'
+    }, {
+        column = 'type',
+        type = 'text' 
+    }, {
+        column = 'landuse',
+        type = 'text'    
+    }, {
+        column = 'amenity',
+        type = 'text'    
+    }, {
+        column = 'leisure',
+        type = 'text'    
+    }, {
+        column = 'tourism',
+        type = 'text'                        
+    }, {
+        column = 'natural',
+        type = 'text' 
+    }, {
+        column = 'aeroway',
+        type = 'text'        
+    }, {
         column = 'label_visible',
         type = 'bool',
         create_only = true          
@@ -1347,7 +1419,22 @@ function osm2pgsql.process_way(object)
             last_update = format_date(object.timestamp),
             geom = object:as_multipolygon()
         })
-    end    
+    end   
+    
+    if object.is_closed and
+        ( object.tags.landuse or object.tags.natural or object.tags.leisure or object.tags.amenity or object.tags.wetland or object.tags.aeroway) then
+        tables.landcover:insert({
+            name = object.tags.name,
+            name_en = object.tags['name:en'],
+            landuse = object.tags.landuse,   
+            amenity = object.tags.amenity,
+            leisure = object.tags.leisure,
+            natural = object.tags.natural,
+            aeroway = object.tags.aeroway,
+            last_update = format_date(object.timestamp),
+            geom = object:as_multipolygon()
+        })
+    end       
 
     if object.is_closed and object.tags.building then
         tables.building:insert({
@@ -1518,6 +1605,21 @@ function osm2pgsql.process_relation(object)
             geom = object:as_multipolygon()
         })
     end 
+
+    if type == 'multipolygon' and
+        ( object.tags.landuse or object.tags.natural or object.tags.leisure or object.tags.amenity or object.tags.wetland or object.tags.aeroway) then
+        tables.landcover:insert({
+            name = object.tags.name,
+            name_en = object.tags['name:en'],
+            landuse = object.tags.landuse,   
+            amenity = object.tags.amenity,
+            leisure = object.tags.leisure,
+            natural = object.tags.natural,
+            aeroway = object.tags.aeroway,
+            last_update = format_date(object.timestamp),
+            geom = object:as_multipolygon()
+        })
+    end     
 
     if type == 'multipolygon' and
     (object.tags.natural == 'meadow' or object.tags.natural == 'heath' or object.tags.natural == 'grassland' or
