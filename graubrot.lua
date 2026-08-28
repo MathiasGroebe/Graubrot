@@ -1418,6 +1418,19 @@ function osm2pgsql.process_way(object)
         })
     end
 
+    if (not object.is_closed) and object.tags.natural == 'coastline' then
+    tables.waterway:insert({
+        name = object.tags.name,
+        name_en = object.tags['name:en'],
+        waterway = 'coastline',
+        tunnel = clean_tunnel(object),
+        layer = clean_layer(object),
+        intermittent = str_to_bool(object.tags.intermittent),
+        last_update = format_date(object.timestamp),
+        geom = object:as_multilinestring()
+    })
+end
+
     if object.tags.boundary == 'administrative' then
         tables.admin_boundary_line:insert({
             name = object.tags.name,
