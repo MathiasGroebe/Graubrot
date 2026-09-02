@@ -431,6 +431,9 @@ tables.traffic = osm2pgsql.define_table({
     }, {
         column = 'surface',
         type = 'text'
+    }, {
+        column = 'access',
+        type = 'text'        
     }, {        
         column = 'oneway',
         type = 'bool'
@@ -1466,6 +1469,7 @@ function osm2pgsql.process_way(object)
             usage = object.tags.usage,
             tracktype = object.tags.tracktype,
             surface = object.tags.surface,
+            access = object.tags.access,
             oneway = clean_oneway(object), -- make it a bool
             bridge = clean_bridge(object), -- make it a bool
             tunnel = clean_tunnel(object), -- make it a bool

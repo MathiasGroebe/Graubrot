@@ -185,6 +185,7 @@ graph TD;
 | tracktype | text | | Content of the ```tracktype``` tag | 
 | trail_visibility | text | | Content of the ```trail_visibility``` tag |
 | surface | text | | Content of the ```surface``` tag |
+| access | text | | Content of the ```access``` tag |
 | oneway | bool | B-Tree | Content of the ```oneway``` tag converted to a bool | 
 | bridge | bool | B-Tree | Content of the ```bridge``` tag converted to a bool | 
 | tunnel | bool | B-Tree |  Content of the ```tunnel``` tag converted to a bool | 
