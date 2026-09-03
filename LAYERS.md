@@ -201,6 +201,7 @@ Waterway linstring layer with name of the objects, and common attributes.
 ```mermaid
 graph TD;
     a[waterway=*]-->waterway;
+    b[natural=coastline]-->waterway;
 ```
 
 | Attribute | Type | Index | Describtion |
